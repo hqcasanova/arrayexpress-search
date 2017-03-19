@@ -5,9 +5,11 @@ logs
 *.log
 npm-debug.log*
 node_modules
-dist/
+build/
 .project
 .settings
 *~
 *.diff
 *.patch
+*.css
+*.html

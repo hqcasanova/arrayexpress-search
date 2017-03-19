@@ -1,0 +1,58 @@
+.spinner {
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 10;
+    margin-top: -1.5rem;
+    margin-left: -1.5rem;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    border: 2px @border-dark solid;
+    border-top: 2px transparent solid;
+    border-bottom: 2px transparent solid;
+    border-right: 2px transparent solid;
+    opacity: .4;
+    animation: rotate 1s infinite forwards;
+
+    .loading & {
+        display: block;
+    }
+}
+@-webkit-keyframes rotate {
+    50% {
+        opacity: 1;
+        transform: rotate(360deg)
+    }
+}
+@keyframes rotate {
+    50% {
+        opacity: 1;
+        transform: rotate(360deg)
+    }
+}
+
+.wait-msg {
+    display: none;
+    padding: 1rem;
+
+    .wait & {
+        display: block;
+    }
+}
+
+.error-msg {
+    display: none;
+    padding: 1rem;
+    
+    dt {
+        margin-bottom: .4rem;
+        font-weight: bold;
+        color: @text-error;
+    }
+
+    .error & {
+        display: block;
+    }
+}

@@ -1,0 +1,114 @@
+.experiment {
+    padding: 1rem;
+    overflow: hidden;
+    line-height: 1.5rem;
+
+    &.empty {
+        background: @bg-lightest;
+
+        p {
+            margin: 1rem 0;
+        }
+
+        ul {
+            list-style-type: disc;
+        }
+
+        li {
+            margin-left: 1.2rem;
+        }
+    }
+
+    .experiment-entry {
+        margin-bottom: .1rem;
+        font-size: 1.2rem;
+    }
+
+    .experiment-details {
+        overflow: hidden;
+
+        p, div {
+            margin: .5rem 0;
+        }
+
+        div {
+            white-space: nowrap;
+
+            @media @medium {
+                float: left;
+                margin-top: 0;
+                width: 50%;
+            }
+        }
+
+        dd {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        [data-attribute="experimenttype"] + dd {
+            width: 84%;
+        }
+
+        [data-attribute="organism"] + dd {
+            width: 72%;
+        }
+
+        dd, dt {
+            display: inline-block;
+            vertical-align: middle;
+        }
+    }
+
+    .sortable {
+        color: @text-lighter;
+        border-bottom: 1px dotted @border-med;
+
+        &:hover, &.active {
+            color: @text-med;
+            border-bottom-style: solid;
+            cursor: pointer;
+        }
+        
+        &.active {
+            &:before {
+                content: '\2191';
+                font-size: 1.2rem;
+            }
+
+            .descending &:before {
+                content: '\2193';
+                font-size: 1.2rem;
+            }
+        }
+    }
+
+    .experiment-files {
+        position: relative;
+        margin-top: .5rem;
+
+        .spinner {
+            margin-top: -.9rem;
+            margin-left: -.9rem;
+            width: 1.8rem;
+            height: 1.8rem;
+        }
+
+        .stats {
+            display: inline-block;
+            padding: 0 .7rem;
+            background: @bg-light;
+        
+            dfn {
+                font-weight: bold;
+            }
+
+            .link-container {
+                display: inline-block;
+                box-sizing: border-box;
+                padding: .5rem;
+                min-width: 45px;
+            }
+        }
+    }
+}
