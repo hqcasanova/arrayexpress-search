@@ -43,16 +43,20 @@ export default Marionette.View.extend({
     },
 
     initialize: function (options) {
-        this.sortAttrs = [];
-        this.collection = new Files([], {
-            url: options.filesApiUrl,
-            model: File,
-            rootProp: 'files',
-            initStats: {
-                totalProcessed: 0,
-                totalRaw: 0
-            }
-        });       
+        if (options.hasOwnProperty('filesApiUrl')) {
+            this.sortAttrs = [];
+            this.collection = new Files([], {
+                url: options.filesApiUrl,
+                model: File,
+                rootProp: 'files',
+                initStats: {
+                    totalProcessed: 0,
+                    totalRaw: 0
+                }
+            });
+        } else {
+            throw new Error('Error while initialising experiment view: no file API URL provided.');;
+        }          
     },
 
     stripHTML: function (html) {
@@ -72,6 +76,7 @@ export default Marionette.View.extend({
 
     onRender: function () {
         const fileStatsEl = this.el.querySelector('.experiment-files');
+        const expAccession = this.model.get('accession');
         const files = this.collection;
         
         //Shows feedback while the experiment's file data is loading
@@ -82,13 +87,15 @@ export default Marionette.View.extend({
 
         //Adds counts for raw and processed files
         const statsEl = new FileStatsView({
-            model: files.stats
+            model: files.stats,
+            sryAccession: this.model.get('secondaryaccession'),     //Enables alternative file URL if no raw files found
+            fileRoot: `${this.options.experimentUrl}/${expAccession}/files`  
         }).render().el;
         fileStatsEl.appendChild(statsEl);
 
         //Lazy-loads file data if visible on scroll or resize. 
-        this.collection.url += `/${this.model.get('accession')}`;
-        this.listenTo(Backbone, 'scroll', this.fetchIfAbove.bind(this));
+        this.collection.url += `/${expAccession}`;
+        this.listenTo(Backbone, 'visibility:check', this.fetchIfAbove.bind(this));
 
         this.sortAttrs = this.el.getElementsByClassName(this.options.activeClass);  
     },

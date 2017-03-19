@@ -12,11 +12,13 @@ export default Backbone.Model.extend({
         }
     },
 
-    //Normalises kind to a single value: "processed" or "raw".
+    //Normalises kind to a single non-array value: "processed" or "raw".
     parse: function (response) {
-        response.kind = _.find(response.kind, (kind) => {
-            return kind === 'processed' || kind === 'raw';
-        });
+        if (Array.isArray(response.kind)) {
+            response.kind = _.find(response.kind, (kind) => {
+                return kind === 'processed' || kind === 'raw';
+            });
+        }
 
         return response;
     }

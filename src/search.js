@@ -38,7 +38,10 @@ const Search = Marionette.Application.extend({
         });
 
         window.addEventListener('scroll', _.throttle(function () {
-            _.defer(function () {Backbone.trigger('scroll')});
+            _.defer(function () {Backbone.trigger('visibility:check')});
+        }), 250);
+        window.addEventListener('resize', _.throttle(function () {
+            _.defer(function () {Backbone.trigger('visibility:check')});
         }), 250);
     },
 
