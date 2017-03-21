@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"> 
+    <title>ArrayExpress | Functional Genomics Archive</title>
+    <link rel="stylesheet" href="styles.css" as="style">
+    <link rel="shortcut icon" href="/favicon.png">
+    <meta name="description" content="Search EMBL-EBI's Archive of Functional Genomics Data." />
+    <meta property="og:image" content="https://www.ebi.ac.uk/arrayexpress/assets/images/ae-logo-64.svg" />
+    <meta property="og:description" content="ArrayExpress is an archive of functional genomics data created by EMBL-EBI from high-throughput experiments to facilitate reuse by the research community." />
+</head>
+<body>
+
+    <!-- COVER -->
+    <header class="search">
+        <a rel="external" href="http://www.ebi.ac.uk/" class="corporate">
+            <img src="https://www.ebi.ac.uk/web_guidelines/EBI-Framework/v1.1/images/logos/EMBL-EBI/EMBL_EBI_Logo_white.svg" alt="EMBL-EBI" class="corporate-logo"/>
+        </a>
+        <div class="panel">
+            <hgroup class="identity">
+                <h1>
+                    <img src="https://www.ebi.ac.uk/arrayexpress/assets/images/ae-logo-64.svg" alt="ArrayExpress" class="logo" />
+                    <span class="title">ArrayExpress</span>
+                </h1>
+                <h2 class="subtitle">Functional genomics data</h2>
+            </hgroup>
+            <fieldset class="action">
+                <input type="search" value="" class="field" id="search-field"><!--
+             --><a rel="search" href="javascript:void(0)" class="button" id="search-button">
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 -3 24 24" shape-rendering="geometricPrecision" class="icn-magnify">
+                        <ellipse fill="none" cx="10.3" cy="7.2" rx="6.3" ry="6.2"></ellipse>
+                        <line fill="none" stroke-linecap="round" x1="14.9" y1="12" x2="20" y2="17"></line>
+                    </svg>
+                    <span>search</span>
+                </a>    
+            </fieldset>
+        </div>
+        <a rel="external" href="https://github.com/hqcasanova/arrayexpress-search" class="forkme"><img src="https://s3.amazonaws.com/github/ribbons/forkme_left_gray_6d6d6d.png" alt="" width="149" height="149"></a>
+        <ul class="footer">
+            <li><img alt="MIT" src="assets/mit.png" width="120" height="64"><a rel="external" class="mit footer-link" title="The MIT License" href="http://opensource.org/licenses/MIT">Released under <em>MIT License</em></a></li><!--
+         --><li><a rel="external" class="hq footer-link" title="HQCasanova.com" href="http://www.hqcasanova.com">Created by <em>HQCasanova</em></a><img alt="HQCasanova" src="assets/hqcasanova.png" width="64" height="64"></li>
+        </ul>
+    </header>
+
+    <!-- BELOW THE FOLD -->
+    <main role="main" class="results">
+    </main>
+    
+    <!-- Search application -->
+    <script src="bundle.js"></script>
+</body>
+</html>

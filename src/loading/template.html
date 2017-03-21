@@ -1,0 +1,10 @@
+<div class="spinner"></div>
+<p class="wait-msg">Please wait while all the results are retrieved.</p>
+<dl class="error-msg">
+    <dt>Server error</dt> 
+    <dd><p>Maybe you are offline? 
+      <% if (email) { %>
+        If not, please contact <a rel="external" href="<%= encodeURI(`mailto:${email}?Subject=ArrayExpress - Request failure`) %>">the support team</a>.
+      <% } %>
+    </p></dd>
+</dl>

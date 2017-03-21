@@ -1,0 +1,9 @@
+<article class="experiment empty">
+    <h1>Your search - <strong>&quot;<%= query %>&quot;</strong> - did not match any experiments.</h1>
+    <p>Suggestions</p>
+    <ul>
+        <li>Verify the keywords used. Is it the right accession number, for example?</li>
+        <li>Try different keywords. How about words in the experiment's title?</li>
+        <li><a rel="external" href="<%= encodeURI(`mailto:${email}?Subject=ArrayExpress v${apiVersion}.${apiRevision} - Unmatched query: "${query}"`) %>">Contact us </a> if the query refers to an experiment that should be included in the database.</li>
+    </ul>
+</article>

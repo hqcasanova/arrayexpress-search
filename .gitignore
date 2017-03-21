@@ -12,4 +12,4 @@ build/
 *.diff
 *.patch
 *.css
-*.html
+build/*.html
