@@ -47,12 +47,16 @@ export default Marionette.View.extend({
         }
 
         //If new query issued or previous returned no result (to allow repeat on error),
-        //it fetches the collection with reset (collection view renders on event)
+        //it fetches the collection with reset (collection view renders on event).
+        //The search field is blurred, barring empty results, to avoid a "sticky" virtual 
+        //keyboard on mobile.
         if ((query != '') && ((stats.get('query') != query) || (stats.get('total') == 0))) {
             stats.set('query', query);
+            this.fieldEl.blur();
             results.fetch({
                 reset: true,
-                data: {keywords: query.replace(/\s/g, '+')}
+                data: {keywords: query.replace(/\s/g, '+')},
+                success: (results) => {!results.length && this.fieldEl.focus()}
             });
         } 
     },
