@@ -17,7 +17,7 @@ export default Marionette.View.extend({
     },     
 
     templateContext: function () {
-        var view = this;
+        const view = this;
 
         return {
 
@@ -60,10 +60,10 @@ export default Marionette.View.extend({
     },
 
     stripHTML: function (html) {
-        var div = document.createElement("div");
+        const el = document.createElement("div");
         
-        div.innerHTML = html;
-        return div.textContent;
+        el.innerHTML = html;
+        return el.textContent;
     },
 
     truncStr: function (string, charLimit = this.options.descCharLimit) {

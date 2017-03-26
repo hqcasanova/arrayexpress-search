@@ -15,11 +15,10 @@ import LoadingView from './loading/view';
 const Search = Marionette.Application.extend({
     results: null,      //search results collection
 
-    //Enables JSONP requests globally and sets up results collection.
-    //Also broadcasts scroll offset of bottom edge of visible page.     
     onBeforeStart: function (app, options) {
         const defaultSync = Backbone.sync;
 
+        //Enables JSONP requests globally
         Backbone.sync = function (method, collection, options) {
             options.dataType = 'jsonp';
             options.jsonp = 'jsonp';
@@ -27,6 +26,7 @@ const Search = Marionette.Application.extend({
             return defaultSync(method, collection, options);
         };
 
+        //Sets up search results collection
         this.results = new Results([], {
             url: options.rootUrl + options.apiPath + options.searchPath,
             model: Experiment,
@@ -37,12 +37,34 @@ const Search = Marionette.Application.extend({
             }
         });
 
+        //Makes the supported transition event name globally available
+        Marionette.transitionEvnt = this.getTransitionEvnt();
+
+        //Also broadcasts scroll offset of bottom edge of visible page.     
         window.addEventListener('scroll', _.throttle(function () {
             _.defer(function () {Backbone.trigger('visibility:check')});
         }), 250);
         window.addEventListener('resize', _.throttle(function () {
             _.defer(function () {Backbone.trigger('visibility:check')});
         }), 250);
+    },
+
+    //Detects the transition event name
+    getTransitionEvnt: function () {
+        const el = document.createElement('div');
+        const transitions = {
+            'transition':'transitionend',
+            'MozTransition':'transitionend',
+            'WebkitTransition':'webkitTransitionEnd'
+        };
+
+        for (let evntName in transitions) {
+            if (transitions.hasOwnProperty(evntName) && el.style[evntName] !== undefined) {
+                return transitions[evntName];
+            }
+        }
+
+        return null;
     },
 
     //Sets up view scaffolding around existing markup

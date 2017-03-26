@@ -17,10 +17,9 @@ export default Backbone.Model.extend({
     },
 
     parse: function (response) {
-        var converted = {};
-        var key;
+        let converted = {};
 
-        for (key in response) {
+        for (let key in response) {
             converted[this.camelise(key)] = response[key];
         }
         

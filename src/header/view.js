@@ -62,22 +62,27 @@ export default Marionette.View.extend({
         this.toggleHeader(false);
     },
 
-    toggleHeader: function (isCollapsed) {
-        var that = this;
+    toggleHeader: function (isCollapse) {
+        const that = this;
 
-        //Before making header stick to the top, ensures height transition has ended
-        if (isCollapsed) {
-            !this.el.classList.contains('collapsed') && this.el.addEventListener('transitionend', function self () {
-                that.el.removeEventListener('transitionend', self);
-                that.panelEl.classList.add('sticky');        
-            });
+        //Before making header stick to the top, ensures height transition has ended and
+        //falls back to no transition for browsers not supporting the standard event.
+        if (isCollapse) {
+            if (Marionette.transitionEvnt && !this.el.classList.contains('collapsed')) {
+                this.el.addEventListener(Marionette.transitionEvnt, function self () {
+                    that.el.removeEventListener(Marionette.transitionEvnt, self);
+                    that.panelEl.classList.add('sticky');        
+                });
+            } else if (!this.el.classList.contains('collapsed')) {
+                that.panelEl.classList.add('sticky');
+            }
 
         //Goes back to previous visual state straight away
         } else {
             this.panelEl.classList.remove('sticky');
         }
 
-        this.el.classList.toggle('collapsed', isCollapsed);
-        this.trigger('header:collapse', isCollapsed);
-    } 
+        this.el.classList.toggle('collapsed', isCollapse);
+        this.trigger('header:collapse', isCollapse);
+    }
 });

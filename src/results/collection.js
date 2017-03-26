@@ -6,6 +6,7 @@ import Stats from '../stats/model';
 export default Backbone.Collection.extend({   
     rootProp: null,     //Root property for the response
     stats: null,        //Model built with all the response's 1st-level properties
+    lastFetched: null,  //Promise from last GET request
 
     initialize: function (models, options) {
         const hasRootProp = options.hasOwnProperty('rootProp');
@@ -15,6 +16,7 @@ export default Backbone.Collection.extend({
             this.stats = new Stats(options.initStats);
             this.url = options.url;
             this.rootProp = options.rootProp;
+            this.lastFetched = {readyState: 4};     //pretends a successful request
         } else if (hasInitStats) {
             throw new Error('Error while initialising collection: no root property name provided.');
         } else {
@@ -29,18 +31,23 @@ export default Backbone.Collection.extend({
         return response[this.rootProp].experiment;
     },
 
-    //Relays collection events to the stats model
+    //Aborts any pending request ad relays collection events to the stats model 
     fetch: function (options) {
-        const xhr = Backbone.Collection.prototype.fetch.call(this, options);
+        const fetched = Backbone.Collection.prototype.fetch.call(this, options);
+
+        if (this.lastFetched.readyState != 4) {
+            this.lastFetched.abort('stale');
+        }
+        this.lastFetched = fetched;
         
-        this.stats.trigger('request', this.stats, xhr, options);
-        xhr.done(() => {
+        this.stats.trigger('request', this.stats, fetched, options);
+        fetched.done(() => {
             this.stats.trigger('sync', this.stats, this.stats.toJSON(), options);
         }).fail(() => {
             this.stats.trigger('error', this.stats, this.stats.toJSON(), options);
             console.log(`Error while retrieving ${this.rootProp}`); 
         });
 
-        return xhr; 
+        return fetched; 
     }
 });

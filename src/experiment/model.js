@@ -12,7 +12,7 @@ export default Backbone.Model.extend({
     },
 
     parse: function (response) {
-        var hasType = response.hasOwnProperty('experimenttype');
+        let hasType = response.hasOwnProperty('experimenttype');
 
         response.hasType = hasType;
         return response;
