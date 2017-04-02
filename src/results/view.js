@@ -4,6 +4,28 @@ import Backbone from 'backbone';
 import Marionette from 'backbone.marionette';
 import ExperimentView from '../experiment/view';
 import emptyTemplate from '../experiment/empty.html';
+import idleTemplate from '../experiment/idle.html';
+
+const EmptyExp = Marionette.View.extend({
+    /* DATA */
+    model: null,        //Result stats. Marked as new unless a request already done.
+
+    /* DOM */
+    tagName: 'li',
+    templateContext: {
+        email: '',      //If no email given, the contact message will not be shown
+    },
+
+    //Shows suggested examples if no request has been made yet (idle state). Otherwise,
+    //it lists possible reasons for an empty result.
+    getTemplate: function () {
+        if (this.model.isNew()) {
+            return idleTemplate;
+        } else {
+            return emptyTemplate;
+        }
+    }
+});
 
 export default Marionette.CollectionView.extend({
     tagName: 'ol',
@@ -13,14 +35,7 @@ export default Marionette.CollectionView.extend({
         tagName: 'li',
         className: 'result'
     },
-    emptyView: Marionette.View.extend({
-        tagName: 'li',
-        template: emptyTemplate,
-        templateContext: {
-            email: '',      //If no email given, the contact message will not be shown
-        }
-    }),
-
+    emptyView: EmptyExp,    //Used for the idle state too (no request made yet).
     reorderOnSort: true,    //Reorders DOM elements instead of re-rendering the whole view 
     currSortAttr: null,     //Criterion attribute which the collection is currently sorted by
     isDescending: null,     //Are values sorted from the largest to the smallest?   

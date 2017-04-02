@@ -13,7 +13,8 @@ export default Marionette.View.extend({
     sortAttrs: null,    //Live DOM collection keeping track of the element containing the sort attribute
 
     options: {
-        activeClass: 'active'       //Class name used for marking the sort attribute's DOM element
+        activeClass: 'active',      //Class name used for marking the sort attribute's DOM element
+        cacheExpiry: 300            //By default, cached files will age after 5 minutes
     },     
 
     templateContext: function () {
@@ -107,7 +108,7 @@ export default Marionette.View.extend({
         const files = this.collection;
 
         if (!files.isBusy && !files.isFetched && isAboveFold) {
-            files.fetch();
+            files.fetch({cache: true, expires: this.options.cacheExpiry});
             this.stopListening(Backbone);
         }
     },

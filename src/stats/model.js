@@ -12,7 +12,7 @@ export default Backbone.Model.extend({
         }
     },
 
-    initialise: function () {
+    initialize: function () {
         this.on('error', this.purgeLastTotal);
     },
 
@@ -54,6 +54,6 @@ export default Backbone.Model.extend({
     },
 
     purgeLastTotal: function () {
-        this.set('total',  0); 
+        this.set('total',  0);
     }
 });

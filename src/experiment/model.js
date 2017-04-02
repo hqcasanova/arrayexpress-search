@@ -11,10 +11,15 @@ export default Backbone.Model.extend({
         }
     },
 
+    //Flags experiments that lack the "experimenttype" property (a handful of them)
     parse: function (response) {
         let hasType = response.hasOwnProperty('experimenttype');
 
+        if (!hasType) {
+            console.log(`Experiment with ID ${response.id} and accession ${response.accession} has no "experimenttype" property set`);
+        }
         response.hasType = hasType;
+
         return response;
     },
 

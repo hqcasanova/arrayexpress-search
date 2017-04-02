@@ -1,6 +1,7 @@
 import './styles.less';
 import $ from 'jquery';
 import _ from 'underscore';
+import 'backbone-fetch-cache';
 import Backbone from 'backbone';
 import Marionette from 'backbone.marionette';
 import Experiment from './experiment/model';
@@ -16,15 +17,6 @@ const Search = Marionette.Application.extend({
     results: null,      //search results collection
 
     onBeforeStart: function (app, options) {
-        const defaultSync = Backbone.sync;
-
-        //Enables JSONP requests globally
-        Backbone.sync = function (method, collection, options) {
-            options.dataType = 'jsonp';
-            options.jsonp = 'jsonp';
-            options.cache = true;
-            return defaultSync(method, collection, options);
-        };
 
         //Sets up search results collection
         this.results = new Results([], {
@@ -40,16 +32,17 @@ const Search = Marionette.Application.extend({
         //Makes the supported transition event name globally available
         Marionette.transitionEvnt = this.getTransitionEvnt();
 
-        //Also broadcasts scroll offset of bottom edge of visible page.     
+        //Listens to screen resize and scrolling events to check the visibility
+        //of UI parts before any further action
         window.addEventListener('scroll', _.throttle(function () {
             _.defer(function () {Backbone.trigger('visibility:check')});
-        }), 250);
-        window.addEventListener('resize', _.throttle(function () {
+        }), 300);
+        window.addEventListener('resize', _.debounce(function () {
             _.defer(function () {Backbone.trigger('visibility:check')});
-        }), 250);
+        }), 400);
     },
 
-    //Detects the transition event name
+    //Detects the supported transition event name
     getTransitionEvnt: function () {
         const el = document.createElement('div');
         const transitions = {
@@ -70,14 +63,21 @@ const Search = Marionette.Application.extend({
     //Sets up view scaffolding around existing markup
     onStart: function (app, options) {
         const resultsEl = document.querySelector('.results');
-        
+
         //Sets up search input and prevents scroll when the app cover is on display
         const headerView = new HeaderView({
             el: document.querySelector('.search'),
             model: this.results.stats,
-            collection: this.results
+            collection: this.results,
+            cacheExpiry: options.cacheExpiry
         });
         this.listenTo(headerView, 'header:collapse', this.preventScroll);
+
+        //Allows direct navigation to search results and history
+        const router = new Marionette.AppRouter({
+            appRoutes: {':query': 'searchOnRoute'},
+            controller: headerView
+        });
         
         //Scaffolds results area for loading state
         const LoadingWithEmail = LoadingView(options.supportEmail, options.waitDelay * 1000);
@@ -100,17 +100,24 @@ const Search = Marionette.Application.extend({
                 descCharLimit: options.descCharLimit,
                 nameCharLimit: options.nameCharLimit,
                 dateSeparator: options.dateSeparator,
-                loadingClass: LoadingWithEmail
+                loadingClass: LoadingWithEmail,
+                cacheExpiry: options.cacheExpiry
             },
             emptyViewOptions: {
                 model: this.results.stats,
-                templateContext: {email: options.curatorEmail}
+                templateContext: {
+                    email: options.curatorEmail,
+                    helpUrl: options.rootUrl + options.helpPath
+                }
             },
             defaultSortAttr: options.sortAttr,
             defaultSortDir: options.sortDir
         }).render().el;
         resultsEl.appendChild(statsEl);
         resultsEl.appendChild(listEl);
+
+        //From now on, routes are handled and changes listened to.
+        Backbone.history.start();
     },
 
     preventScroll: function (isCollapsed) {
@@ -121,9 +128,11 @@ const Search = Marionette.Application.extend({
 //Instance with app-wide options
 const search = new Search().start({
     rootUrl: 'https://www.ebi.ac.uk/arrayexpress',
-    apiPath: '/json/v3',
+    helpPath: '/help/how_to_search.html',   //Official help guide for search
+    apiPath: '/json/v3',                //JSON and JSONP endpoint
     searchPath: '/experiments',         //Endpoint for experiment meta-data
     filesPath: '/files',                //Endpoint for an experiment's file meta-data
+    cacheExpiry: 3600,                  //Expiry time in seconds for cached data on localstorage
     descCharLimit: 250,                 //Character limit for experiment description in search results
     nameCharLimit: 80,                  //Character limit for experiment name 
     dateSeparator: '/',                 //Dates will be of format dd/mm/yyyy

@@ -6,7 +6,9 @@ import Stats from '../stats/model';
 export default Backbone.Collection.extend({   
     rootProp: null,     //Root property for the response
     stats: null,        //Model built with all the response's 1st-level properties
-    lastFetched: null,  //Promise from last GET request
+    lastSynced: null,   //Promise from last request
+    isFulfilled: null,  //The last GET request was fulfilled
+    isFirstFetch: null, //There has been no prior GET request 
 
     initialize: function (models, options) {
         const hasRootProp = options.hasOwnProperty('rootProp');
@@ -16,7 +18,9 @@ export default Backbone.Collection.extend({
             this.stats = new Stats(options.initStats);
             this.url = options.url;
             this.rootProp = options.rootProp;
-            this.lastFetched = {readyState: 4};     //pretends a successful request
+            this.lastSynced = {};
+            this.isFulfilled = true;
+            this.isFirstFetch = true;
         } else if (hasInitStats) {
             throw new Error('Error while initialising collection: no root property name provided.');
         } else {
@@ -31,17 +35,23 @@ export default Backbone.Collection.extend({
         return response[this.rootProp].experiment;
     },
 
-    //Aborts any pending request ad relays collection events to the stats model 
+    //Aborts any pending request, unmarks stats as new once first successful request
+    //has been made and relays collection events to the stats model 
     fetch: function (options) {
-        const fetched = Backbone.Collection.prototype.fetch.call(this, options);
+        let fetched;
 
-        if (this.lastFetched.readyState != 4) {
-            this.lastFetched.abort('stale');
+        if (!this.isFirstFetch && !this.isFulfilled) {
+            this.lastSynced.abort('stale');
+        } else if (this.isFirstFetch) {
+            this.isFirstFetch = false;
+            this.stats.set('id', 1);
         }
-        this.lastFetched = fetched;
+        fetched = Backbone.Collection.prototype.fetch.call(this, options);
+        this.isFulfilled = false;
         
         this.stats.trigger('request', this.stats, fetched, options);
         fetched.done(() => {
+            this.isFulfilled = true;
             this.stats.trigger('sync', this.stats, this.stats.toJSON(), options);
         }).fail(() => {
             this.stats.trigger('error', this.stats, this.stats.toJSON(), options);
@@ -49,5 +59,18 @@ export default Backbone.Collection.extend({
         });
 
         return fetched; 
+    },
+
+    //Since backbone-fetch-cache plugin modifies the promise before returning from fetch,
+    //methods such as "abort" are lost. Hence the caching of the promise here, at the lower
+    //$.ajax level. Also, enables JSONP requests.
+    sync: function (method, collection, options) {
+        options.dataType = 'jsonp';
+        options.jsonp = 'jsonp';
+        options.cache = true;
+
+        this.lastSynced = Backbone.Collection.prototype.sync.call(this, method, collection, options);
+
+        return this.lastSynced;
     }
 });
