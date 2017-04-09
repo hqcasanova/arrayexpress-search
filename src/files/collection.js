@@ -10,7 +10,14 @@ export default Results.extend({
     isBusy: null,           //Indicates a request is in progress  
 
     initialize: function (models, options) {
-        Results.prototype.initialize.call(this, models, options);
+        Results.prototype.initialize.call(this, models, _.extend(options, {
+            rootProp: 'files',
+            initStats: {
+                totalProcessed: 0,
+                totalRaw: 0
+            }
+        }));
+                
         this.filesByCat = {};
         this.stats.set('filesByCat', this.filesByCat);
 
@@ -26,7 +33,6 @@ export default Results.extend({
         response = Results.prototype.parse.call(this, response);
         return response.file;
     },
-
     
     //Updates stats and fetched state before triggering the "sync" event
     fetch: function (options = {}) {

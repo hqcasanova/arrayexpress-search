@@ -36,7 +36,7 @@ body {
 p {
     line-height: 1.5rem;
 }
-a[rel="external"] {
+a[rel="external"], a.internal {
     color: @text-dark;
     border-bottom: 1px dotted @border-darkest;
 
@@ -46,11 +46,11 @@ a[rel="external"] {
     }
 }
 
-
 /* COMPONENTS */
-@import 'header/styles.less';
 @import 'loading/styles.less';
+@import 'header/styles.less';
 @import 'stats/styles.less'; 
 @import 'experiment/styles.less';
-@import 'files/styles.less';
 @import 'results/styles.less';
+@import 'experiments/styles.less';
+@import 'files/styles.less';

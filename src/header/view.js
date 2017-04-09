@@ -42,6 +42,9 @@ export default Marionette.View.extend({
             throw new Error('Error while initialising input view: no result stats model provided.');
         }
 
+        //Reveals controls since all required JavaScript is now in place.
+        this.el.querySelector('.action').classList.remove('loading');
+
         //Caches DOM elements and resets the text for the search button
         this.panelEl = this.el.querySelector('.panel');
         this.fieldEl = this.panelEl.querySelector('#search-field');

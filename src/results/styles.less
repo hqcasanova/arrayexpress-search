@@ -1,28 +1,9 @@
-.results {
-    margin: auto;
-    padding-top: 5rem;
-    max-width: 1250px;
-
-    .no-scroll & {
-        overflow: hidden;
-        height: 0;
-    }
-
-    &.loading {
-        position: relative;
-        box-sizing: border-box;
-        min-height: 100%;
-
-        ol {
-            display: none;
-        }
-    }
-
-    & > .stats.empty {
+.result-list {
+    .loading & {
         display: none;
     }
 
-    &.error ol {
+    .error & {
         display: none;
     }
 

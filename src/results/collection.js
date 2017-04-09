@@ -13,23 +13,25 @@ export default Backbone.Collection.extend({
     initialize: function (models, options) {
         const hasRootProp = options.hasOwnProperty('rootProp');
         const hasInitStats = options.hasOwnProperty('initStats');
-
-        if (hasInitStats && hasRootProp) {
-            this.stats = new Stats(options.initStats);
-            this.url = options.url;
-            this.rootProp = options.rootProp;
-            this.lastSynced = {};
-            this.isFulfilled = true;
-            this.isFirstFetch = true;
-        } else if (hasInitStats) {
+            
+        if (!hasRootProp) {
             throw new Error('Error while initialising collection: no root property name provided.');
-        } else {
+        }
+        if (!hasInitStats) {
             throw new Error('Error while initialising collection: no initial stats provided.');
         }
+
+        this.stats = new Stats(options.initStats);
+        this.url = options.url;
+        this.rootProp = options.rootProp;
+        this.lastSynced = {};
+        this.isFulfilled = true;
+        this.isFirstFetch = true;
     },
 
     //Creates a model with the search results' stats before they are parsed out to
     //allow correct building of models.
+    //NOTE: all collections are contained within a 2nd-level "experiment" property
     parse: function (response) {
         this.stats.set(this.stats.parse(_.omit(response[this.rootProp], 'experiment')));
         return response[this.rootProp].experiment;

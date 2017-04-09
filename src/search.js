@@ -1,15 +1,13 @@
+import 'font-awesome-webpack';
 import './styles.less';
+import 'backbone-fetch-cache';
 import $ from 'jquery';
 import _ from 'underscore';
-import 'backbone-fetch-cache';
 import Backbone from 'backbone';
 import Marionette from 'backbone.marionette';
-import Experiment from './experiment/model';
-import Results from './results/collection';
+import Experiments from './experiments/collection';
 import HeaderView from './header/view';
-import StatsView from './stats/view';
-import resultStatsTmpl from './results/stats.html';
-import ResultsView from './results/view';
+import ExperimentsView from './experiments/view';
 import LoadingView from './loading/view';
 
 //Application class
@@ -19,14 +17,10 @@ const Search = Marionette.Application.extend({
     onBeforeStart: function (app, options) {
 
         //Sets up search results collection
-        this.results = new Results([], {
+        this.results = new Experiments([], {
             url: options.rootUrl + options.apiPath + options.searchPath,
-            model: Experiment,
-            rootProp: 'experiments',
-            initStats: {
-                totalAssays: 0,
-                totalSamples: 0
-            }
+            secAccCodes: options.secAccCodes,
+            secAccUrls: options.secAccUrls
         });
 
         //Makes the supported transition event name globally available
@@ -62,7 +56,7 @@ const Search = Marionette.Application.extend({
 
     //Sets up view scaffolding around existing markup
     onStart: function (app, options) {
-        const resultsEl = document.querySelector('.results');
+        const resultsEl = document.querySelector('.experiments');
 
         //Sets up search input and prevents scroll when the app cover is on display
         const headerView = new HeaderView({
@@ -80,7 +74,10 @@ const Search = Marionette.Application.extend({
         });
         
         //Scaffolds results area for loading state
-        const LoadingWithEmail = LoadingView(options.supportEmail, options.waitDelay * 1000);
+        const LoadingWithEmail = LoadingView(
+            options.supportEmail, 
+            options.waitDelay * 1000
+        );
         new LoadingWithEmail({
             el: resultsEl,
             collection: this.results,
@@ -88,11 +85,7 @@ const Search = Marionette.Application.extend({
         }).render();
 
         //Sets up results area = stats + list
-        const statsEl = new StatsView({
-            model: this.results.stats,
-            template: resultStatsTmpl
-        }).render().el;
-        const listEl = new ResultsView({
+        const listView = new ExperimentsView({
             collection: this.results,
             childViewOptions: {
                 experimentUrl: options.rootUrl + options.searchPath,
@@ -104,7 +97,6 @@ const Search = Marionette.Application.extend({
                 cacheExpiry: options.cacheExpiry
             },
             emptyViewOptions: {
-                model: this.results.stats,
                 templateContext: {
                     email: options.curatorEmail,
                     helpUrl: options.rootUrl + options.helpPath
@@ -112,9 +104,9 @@ const Search = Marionette.Application.extend({
             },
             defaultSortAttr: options.sortAttr,
             defaultSortDir: options.sortDir
-        }).render().el;
-        resultsEl.appendChild(statsEl);
-        resultsEl.appendChild(listEl);
+        });
+        resultsEl.appendChild(listView.getStatsView().render().el);
+        resultsEl.appendChild(listView.render().el);
 
         //From now on, routes are handled and changes listened to.
         Backbone.history.start();
@@ -129,16 +121,25 @@ const Search = Marionette.Application.extend({
 const search = new Search().start({
     rootUrl: 'https://www.ebi.ac.uk/arrayexpress',
     helpPath: '/help/how_to_search.html',   //Official help guide for search
-    apiPath: '/json/v3',                //JSON and JSONP endpoint
-    searchPath: '/experiments',         //Endpoint for experiment meta-data
-    filesPath: '/files',                //Endpoint for an experiment's file meta-data
-    cacheExpiry: 3600,                  //Expiry time in seconds for cached data on localstorage
-    descCharLimit: 250,                 //Character limit for experiment description in search results
-    nameCharLimit: 80,                  //Character limit for experiment name 
-    dateSeparator: '/',                 //Dates will be of format dd/mm/yyyy
-    curatorEmail: 'anjaf@ebi.ac.uk',    //Email used in suggestions when no results found
-    supportEmail: 'support@ebi.ac.uk',  //Email used in the event of a request failure
-    waitDelay: 4,                       //Seconds before the user is reminded to wait
-    sortAttr: 'releasedate',            //By default, results sorted by experiment's release date.
-    sortDir: 'descending'               //By default, values will be arranged from largest to smallest
+    apiPath: '/json/v3',                    //JSON and JSONP endpoint
+    searchPath: '/experiments',             //Endpoint for experiment meta-data
+    filesPath: '/files',                    //Endpoint for an experiment's file meta-data
+    cacheExpiry: 3600,                      //Expiry time in seconds for cached data on localstorage
+    descCharLimit: 250,                     //Character limit for experiment description in search results
+    nameCharLimit: 80,                      //Character limit for experiment name 
+    dateSeparator: '/',                     //Dates will be of format dd/mm/yyyy
+    curatorEmail: 'anjaf@ebi.ac.uk',        //Email used in suggestions when no results found
+    supportEmail: 'support@ebi.ac.uk',      //Email used in the event of a request failure
+    waitDelay: 4,                           //Seconds before the user is reminded to wait
+    sortAttr: 'releasedate',                //By default, results sorted by experiment's release date.
+    sortDir: 'descending',                  //By default, values will be arranged from largest to smallest
+    secAccCodes: [                          //3-letter code prefixes of secondary accessions by priority
+        'ERP', 'SRP', 'EGA', 'GSE'          //NOTE 1: 0 index corresponds to highest priority.
+    ],                                      //NOTE 2: To be used for experiments whose raw files are indexed outside ArrayExpress only.        
+    secAccUrls: [                           //URLs corresponding to the above accession codes
+        'http://www.ebi.ac.uk/ena/data/view/',
+        'http://www.ebi.ac.uk/ena/data/view/',
+        'https://www.ebi.ac.uk/ega/studies/',
+        'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='
+    ]
 });

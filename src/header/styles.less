@@ -65,6 +65,10 @@
             font-size: 1.8rem;
             color: @text-lightest;
             border-bottom: 1px solid @border-light;
+
+            sup {
+                font-family: courier;
+            }
         }
 
         .subtitle {
@@ -75,6 +79,15 @@
 
         .action {
             margin-top: 2em;
+
+            &.loading {
+                position: relative;
+
+                .field, .button {
+                    visibility: hidden;
+                    opacity: 0;
+                }
+            }
 
             .field {
                 height: 3rem;
@@ -90,6 +103,7 @@
                 font-weight: 400!important;
                 color: @text-darkest;
                 appearance: none;
+                transition: opacity .3s ease;
             }
 
             .button {
@@ -109,6 +123,7 @@
                 outline: none;
                 border: 1px solid @bg-dark;
                 border-radius: 2px;
+                transition: opacity .3s ease;
 
                 svg {
                     display: none;
@@ -118,6 +133,56 @@
                     stroke: @text-lightest;
                 }
             }
+        }
+    }
+}
+
+.footer {
+    box-sizing: border-box;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    padding: .5rem;
+    width: 100%;
+    font-size: .8rem;
+    line-height: 1.2rem;
+    text-align: right;
+    list-style-type: none;
+    background: #f0f0f0;
+
+    @media @small {
+        display: none;
+    }
+
+    li {
+        display: inline-block;
+        width: 50%;
+
+        &:first-child {
+            text-align: left;
+        }
+        
+        em {
+            display: block;
+        }
+    }
+
+    img {
+        width: auto;
+        height: 1.7rem;
+    }
+
+    .footer-link {
+        display: inline-block;
+        color: gray;
+        border: none !important;
+
+        &.mit {
+            padding-left: .4rem
+        }
+
+        &.hq {
+            padding-right: .4rem
         }
     }
 }
@@ -183,56 +248,6 @@
                     display: none;
                 }
             }
-        }
-    }
-}
-
-.footer {
-    box-sizing: border-box;
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    padding: .5rem;
-    width: 100%;
-    font-size: .8rem;
-    line-height: 1.2rem;
-    text-align: right;
-    list-style-type: none;
-    background: #f0f0f0;
-
-    @media @small {
-        display: none;
-    }
-
-    li {
-        display: inline-block;
-        width: 50%;
-
-        &:first-child {
-            text-align: left;
-        }
-        
-        em {
-            display: block;
-        }
-    }
-
-    img {
-        width: auto;
-        height: 1.7rem;
-    }
-
-    .footer-link {
-        display: inline-block;
-        color: gray;
-        border: none !important;
-
-        &.mit {
-            padding-left: .4rem
-        }
-
-        &.hq {
-            padding-right: .4rem
         }
     }
 }

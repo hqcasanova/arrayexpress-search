@@ -1,12 +1,30 @@
 .link-container {
     display: inline-block;
     box-sizing: border-box;
-    padding: .5rem;
+    padding: .5rem 0 .5rem .7rem;
     min-width: 45px;
 
     .none {
         color: @text-darkest !important;
         border: none !important;
         cursor: default;
+    }
+    .link:before {
+        content: '\f0c1';
+        font-family: FontAwesome;
+    }
+    .download:before {
+        content: '\f019';
+        font-family: FontAwesome;
+    }
+
+    .ERP:before, .SRP:before {
+        content: url('https://www.ebi.ac.uk/arrayexpress/assets/images/ena-icon-16.svg');
+    } 
+    .EGA:before {
+        content: url('https://www.ebi.ac.uk/arrayexpress/assets/images/ega-icon-16.png');
+    }
+    .GSE:before {
+        content: url('https://www.ncbi.nlm.nih.gov/favicon.ico');
     }
 }

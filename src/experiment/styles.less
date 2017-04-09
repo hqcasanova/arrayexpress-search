@@ -16,6 +16,7 @@
 
         li {
             margin-left: 1.2rem;
+            margin-bottom: .5rem;
         }
     }
 
@@ -69,16 +70,29 @@
             border-bottom-style: solid;
             cursor: pointer;
         }
+
+        &:before, &:after {
+            font-family: FontAwesome;
+        }
+
+        &:before {
+            content: '\f0dc';
+            padding-right: .2rem;
+            opacity: .3;
+        }
         
         &.active {
-            &:before {
-                content: '\2191';
-                font-size: 1.2rem;
-            }
+            position: relative;
 
-            .descending &:before {
-                content: '\2193';
-                font-size: 1.2rem;
+            &:after {
+                position: absolute;
+                left: 0;
+                content: '\f0de';
+                opacity: 1;
+
+                .descending & {
+                    content: '\f0dd';
+                }
             }
         }
     }

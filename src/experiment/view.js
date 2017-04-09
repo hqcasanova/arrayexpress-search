@@ -2,7 +2,6 @@ import $ from 'jquery';
 import _ from 'underscore';
 import Backbone from 'backbone';
 import Marionette from 'backbone.marionette';
-import File from '../files/model';
 import Files from '../files/collection';
 import FileStatsView from '../files/view';
 import template from './template.html';
@@ -47,13 +46,7 @@ export default Marionette.View.extend({
         if (options.hasOwnProperty('filesApiUrl')) {
             this.sortAttrs = [];
             this.collection = new Files([], {
-                url: options.filesApiUrl,
-                model: File,
-                rootProp: 'files',
-                initStats: {
-                    totalProcessed: 0,
-                    totalRaw: 0
-                }
+                url: options.filesApiUrl
             });
         } else {
             throw new Error('Error while initialising experiment view: no file API URL provided.');;
@@ -89,7 +82,8 @@ export default Marionette.View.extend({
         //Adds counts for raw and processed files
         const statsEl = new FileStatsView({
             model: files.stats,
-            sryAccession: this.model.get('secondaryaccession'),     //Enables alternative file URL if no raw files found
+            secAccCode: this.model.get('secondaryaccession')[0],
+            secAccUrl: this.model.get('secondaryaccessionurl')[0],     //Enables alternative file URL if no raw files found
             fileRoot: `${this.options.experimentUrl}/${expAccession}/files`  
         }).render().el;
         fileStatsEl.appendChild(statsEl);

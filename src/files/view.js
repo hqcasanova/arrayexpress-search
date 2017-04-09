@@ -8,45 +8,31 @@ import template from './template.html';
 export default StatsView.extend({
     template: template,
 
-    //Default map reducing secondary accession codes to URL according to highest priority
-    //(higher array index means higher priority).
-    options: {
-        sryUrlMap: [
-            {code: 'GSE', url: 'https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc='},
-            {code: 'EGA', url: 'https://www.ebi.ac.uk/ega/studies/'},
-            {code: 'SRP', url: 'http://www.ebi.ac.uk/ena/data/view/'},
-            {code: 'ERP', url: 'http://www.ebi.ac.uk/ena/data/view/'}
-        ]
-    },
-
     initialize: function (options) {
         const hasFileRoot = options.hasOwnProperty('fileRoot');
-        const hasSryAccession = options.hasOwnProperty('sryAccession');
+        const hasSecAccCode = options.hasOwnProperty('secAccCode');
+        const hasSecAccUrl = options.hasOwnProperty('secAccUrl');
 
         if (!hasFileRoot) {
             throw new Error('Error while initialising file stats view: no root URL for file retrieval provided.');;
         }
-        if (!hasSryAccession) {
-            throw new Error('Error while initialising file stats view: no secondary accession provided.');;
+        if (!hasSecAccCode) {
+            throw new Error('Error while initialising file stats view: no secondary accession code provided.');;
         }
+        if (!hasSecAccUrl) {
+            throw new Error('Error while initialising file stats view: no secondary accession URL provided.');;
+        }
+
+        options.secAccCode = options.secAccCode && options.secAccCode.slice(0, 3);
     },
 
     templateContext: function () {
         const fileRoot = this.options.fileRoot;
-        const sryUrl = this.getSryUrl();
+        const secUrl = this.options.secAccUrl;
+        const secCode = this.options.secAccCode;
         const stats = this.model;
 
         return {
-            target: function (typeFile) {
-                if (stats.getTotal(typeFile) > 1) {
-                    return '_blank';
-                } else if (sryUrl) {
-                    return '_blank';
-                } else {
-                    return '_self';
-                }
-            },
-
             url: function (typeFile) {
                 const total = stats.getTotal(typeFile);
                 
@@ -54,8 +40,8 @@ export default StatsView.extend({
                     return `${fileRoot}/${typeFile}`;
                 } else if (total == 1) {
                     return this.filesByCat[typeFile][0].get('url');
-                } else if (sryUrl) {
-                    return sryUrl;
+                } else if (secUrl && typeFile == 'raw') {
+                    return secUrl;
                 } else {
                     return 'javascript:void(0)';
                 }
@@ -65,22 +51,23 @@ export default StatsView.extend({
                 const total = stats.getTotal(typeFile);
                 
                 if (total > 1) {
-                    return 'multiple';
+                    return 'link';
                 } else if (total == 1) {
-                    return 'single';
-                } else if (sryUrl) {
-                    return 'multiple';
+                    return 'download';
+                } else if (secCode && typeFile == 'raw') {
+                    return secCode;
                 } else {
                     return 'none';
                 }
+            },
+
+            rawCount: function () {
+                if (secUrl && !this.totalRaw) {
+                    return secCode;
+                } else {
+                    return this.totalRaw;
+                }
             }
         }
-    }, 
-
-    //Uses secondary accession information to generate an alternative URL if no entries
-    //for raw files exist in ArrayExpress.
-    //TODO: implement logic according to priority 3-letter-code-to-URL map.
-    getSryUrl: function () {
-        return '';
     }
 });

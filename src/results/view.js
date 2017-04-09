@@ -2,40 +2,15 @@ import $ from 'jquery';
 import _ from 'underscore';
 import Backbone from 'backbone';
 import Marionette from 'backbone.marionette';
-import ExperimentView from '../experiment/view';
-import emptyTemplate from '../experiment/empty.html';
-import idleTemplate from '../experiment/idle.html';
-
-const EmptyExp = Marionette.View.extend({
-    /* DATA */
-    model: null,        //Result stats. Marked as new unless a request already done.
-
-    /* DOM */
-    tagName: 'li',
-    templateContext: {
-        email: '',      //If no email given, the contact message will not be shown
-    },
-
-    //Shows suggested examples if no request has been made yet (idle state). Otherwise,
-    //it lists possible reasons for an empty result.
-    getTemplate: function () {
-        if (this.model.isNew()) {
-            return idleTemplate;
-        } else {
-            return emptyTemplate;
-        }
-    }
-});
 
 export default Marionette.CollectionView.extend({
     tagName: 'ol',
+    className: 'result-list',
     attributes: {start: '1'},
-    childView: ExperimentView,
     childViewOptions: {
         tagName: 'li',
         className: 'result'
     },
-    emptyView: EmptyExp,    //Used for the idle state too (no request made yet).
     reorderOnSort: true,    //Reorders DOM elements instead of re-rendering the whole view 
     currSortAttr: null,     //Criterion attribute which the collection is currently sorted by
     isDescending: null,     //Are values sorted from the largest to the smallest?   
@@ -78,13 +53,6 @@ export default Marionette.CollectionView.extend({
                 this.__proto__.childViewOptions
             );
         }
-
-        //Because the collection is hidden until fully loaded (including stats),
-        //any "attach" or "render:children" event will be triggered when the browser still
-        //has no rendering information on the collection's children. Effectively, they will
-        //only be visible once the collection is marked as "loaded" by the Loading view. 
-        //See ../loading/view.js
-        this.listenTo(this.collection, 'loaded', this.onVisible);
     },
 
     //Sets sorting properties to defaults
@@ -99,17 +67,17 @@ export default Marionette.CollectionView.extend({
     //Comparator compatible with both numerical and string values that allows reversal.
     //Harnesses Backbone's support for one-on-one comparisons. Array values will be
     //compared on the basis of their first element.
-    viewComparator: function (exp1, exp2) {
-        const exp1value = this.scalar(exp1.get(this.currSortAttr));
-        const exp2value = this.scalar(exp2.get(this.currSortAttr));
-        const lacksAttr = (typeof exp1value === 'undefined') || 
-                          (typeof exp2value === 'undefined');
+    viewComparator: function (res1, res2) {
+        const res1value = this.scalar(res1.get(this.currSortAttr));
+        const res2value = this.scalar(res2.get(this.currSortAttr));
+        const lacksAttr = (typeof res1value === 'undefined') || 
+                          (typeof res2value === 'undefined');
         
-        if ((exp1value == exp2value) || lacksAttr) {
+        if ((res1value == res2value) || lacksAttr) {
             return 0;
         } 
 
-        if ((exp1value > exp2value) ^ this.isDescending) {
+        if ((res1value > res2value) ^ this.isDescending) {
             return 1;
         } else {
             return -1;
@@ -138,23 +106,5 @@ export default Marionette.CollectionView.extend({
 
         this.currSortAttr = newSortAttr;
         this.resortView();
-    },
-
-    //Highlights the DOM element corresponding to the sort attribute for every experiment view
-    //Bypasses scroll and loads file data for those experiments sitting above the fold 
-    //after reorder.
-    onReorder: function () {
-        this.children.each((expView) => {
-            expView.highlightSortEl(this.currSortAttr);
-            expView.fetchIfAbove();
-        });
-    },
-
-    //Loads file data for those experiments already above the fold when rendered 
-    //for the first time.
-    onVisible: function () {
-        !this.isEmpty() && this.children.each((expView) => {
-            expView.fetchIfAbove();
-        });
     }
 });
