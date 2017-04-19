@@ -57,7 +57,7 @@ export default StatsView.extend({
                 } else if (secCode && typeFile == 'raw') {
                     return secCode;
                 } else {
-                    return 'none';
+                    return 'no-link';
                 }
             },
 

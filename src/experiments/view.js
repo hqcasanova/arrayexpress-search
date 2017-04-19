@@ -45,13 +45,35 @@ export default Results.extend({
         //Because the collection is hidden until fully loaded (including stats),
         //any "attach" or "render:children" event will be triggered when the browser still
         //has no rendering information on the collection's children. Effectively, they will
-        //only be visible once the collection is marked as "loaded" by the Loading view. 
-        //See ../loading/view.js
-        this.listenTo(this.collection, 'loaded', this.onVisible);
+        //only be attached to the DOM once the collection is marked as "loaded" by the 
+        //Loading view (see ../loading/view.js).
+        this.listenTo(this.collection, 'loaded', this.onLoad);
+
+        //Updates list's metrics whenever window is resized;
+        this.listenTo(Backbone, 'window:resize', this.setDims);
 
         //The stats are needed to enable access to api version information to be included in
         //the generated email to the curator.
         this.options.emptyViewOptions.model = this.collection.stats;
+    },
+
+    //Loads file data for those experiments already above the fold when rendered 
+    //for the first time.
+    onLoad: function () {
+        this.setDims();
+        !this.isEmpty() && this.children.each((expView) => {
+            expView.fetchIfVisible();
+        });
+    },
+
+    //Gets the current DOM metrics necessary for list rendering and share them with experiment views
+    //NOTE: DOM metrics retrieval is likely to cause re-flow. Hence the extra care to perform
+    //them just once per list instance.
+    setDims: function () {
+        const windowHeight = window.innerHeight;   
+        this.children.each((expView) => {
+            expView.options.windowHeight = windowHeight;
+        });    
     },
 
     //Highlights the DOM element corresponding to the sort attribute for every experiment view
@@ -60,15 +82,7 @@ export default Results.extend({
     onReorder: function () {
         this.children.each((expView) => {
             expView.highlightSortEl(this.currSortAttr);
-            expView.fetchIfAbove();
-        });
-    },
-
-    //Loads file data for those experiments already above the fold when rendered 
-    //for the first time.
-    onVisible: function () {
-        !this.isEmpty() && this.children.each((expView) => {
-            expView.fetchIfAbove();
+            expView.fetchIfVisible();
         });
     },
 

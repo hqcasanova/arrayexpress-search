@@ -79,7 +79,6 @@ export default Marionette.View.extend({
     search: function (query) {
         const results = this.collection;
         const isError = !results.isFulfilled;
-        
 
         //Collapses the cover to reveal results if the query is at least not empty.
         //If it's not new, it just reveals the results already available, bypassing
@@ -112,28 +111,25 @@ export default Marionette.View.extend({
     },
 
     toggleHeader: function (isCollapse) {
+        this.trigger('header:collapse', isCollapse);
+        this.transCollapse(isCollapse);
+        this.el.classList.toggle('collapsed', isCollapse);       
+    },
+
+    //Before making header stick to the top, ensures height transition has ended and
+    //falls back to no transition for browsers not supporting the standard event.
+    transCollapse: function (isCollapse) {
         const isCollapsedAlready = this.el.classList.contains('collapsed');
         const that = this;
 
-        //Before making header stick to the top, ensures height transition has ended and
-        //falls back to no transition for browsers not supporting the standard event.
-        if (isCollapse) {
-            if (Marionette.transitionEvnt && !isCollapsedAlready) {
-                this.el.addEventListener(Marionette.transitionEvnt, function self () {
-                    that.el.removeEventListener(Marionette.transitionEvnt, self);
-                    that.panelEl.classList.add('sticky');        
-                });
-            } else if (!this.el.classList.contains('collapsed')) {
-                that.panelEl.classList.add('sticky');
-            }
-
-        //Goes back to previous visual state straight away
-        } else {
-            this.panelEl.classList.remove('sticky');
+        if (Marionette.transitionEvnt && !isCollapsedAlready) {
+            this.el.addEventListener(Marionette.transitionEvnt, function self () {
+                that.el.removeEventListener(Marionette.transitionEvnt, self);
+                that.panelEl.classList.toggle('sticky', !isCollapse);        
+            });
+        } else if (!isCollapsedAlready) {
+            that.panelEl.classList.add('sticky', !isCollapse);
         }
-
-        this.el.classList.toggle('collapsed', isCollapse);
-        this.trigger('header:collapse', isCollapse);
     },
 
     //Alias of the above for revealing the result section

@@ -19,18 +19,21 @@ export default Backbone.Model.extend({
     //Flags experiments that lack the "experimenttype" property and adds pointer to
     //secondary accession URLs if applicable.
     parse: function (response) {
-        let hasType = response.hasOwnProperty('experimenttype');
-        let hasSecAcc = response.hasOwnProperty('secondaryaccession');
+        const hasType = response.hasOwnProperty('experimenttype');
+        const hasSecAcc = response.hasOwnProperty('secondaryaccession');
 
         if (!hasType) {
             console.log(`Experiment with ID ${response.id} and accession ${response.accession} has no "experimenttype" property set`);
         }
         response.hasType = hasType;
+        response.hasBiblio = response.hasOwnProperty('bibliography');
+        response.hasSubmitDate = response.hasOwnProperty('submissiondate');
 
         if (hasSecAcc) {
             this.sortAccPriority(response.secondaryaccession);
             response.secondaryaccessionurl = this.getSecAccUrls(response.secondaryaccession);
         }
+        response.hasSecAcc = hasSecAcc;
 
         return response;
     },

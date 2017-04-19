@@ -36,14 +36,28 @@ body {
 p {
     line-height: 1.5rem;
 }
-a[rel="external"], a.internal {
+a[rel="external"], a.internal, a.email {
     color: @text-dark;
     border-bottom: 1px dotted @border-darkest;
+
+    &:before {
+        font-family: FontAwesome;
+    }
 
     &:hover, &:focus, &:active {
         color: @text-darkest;
         border-bottom-style: solid;
     }
+}
+.email {
+    &:before {
+        content: '\f0e0 ';
+    }
+}
+.no-link {
+    color: @text-darkest !important;
+    border: none !important;
+    cursor: default;
 }
 
 /* COMPONENTS */

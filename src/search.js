@@ -26,14 +26,30 @@ const Search = Marionette.Application.extend({
         //Makes the supported transition event name globally available
         Marionette.transitionEvnt = this.getTransitionEvnt();
 
+        //Makes capitalisation convenience method globally available
+        _.capitalise = this.capitalise;
+
         //Listens to screen resize and scrolling events to check the visibility
         //of UI parts before any further action
         window.addEventListener('scroll', _.throttle(function () {
-            _.defer(function () {Backbone.trigger('visibility:check')});
+            Backbone.trigger('window:scroll');
         }), 300);
         window.addEventListener('resize', _.debounce(function () {
-            _.defer(function () {Backbone.trigger('visibility:check')});
+            Backbone.trigger('window:resize');
         }), 400);
+
+        //Irons out differences between browsers for requestAnimationFrame
+        if (!window.requestAnimationFrame) {
+            window.requestAnimationFrame = (function() {
+                return window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame ||
+                window.oRequestAnimationFrame ||
+                window.msRequestAnimationFrame ||
+                function(callback) {
+                    window.setTimeout(callback, 0);
+                };
+            })();
+        }
     },
 
     //Detects the supported transition event name
@@ -52,6 +68,11 @@ const Search = Marionette.Application.extend({
         }
 
         return null;
+    },
+
+    //Capitalises first letter
+    capitalise: function (string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
     },
 
     //Sets up view scaffolding around existing markup

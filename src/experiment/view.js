@@ -5,10 +5,9 @@ import Marionette from 'backbone.marionette';
 import Files from '../files/collection';
 import FileStatsView from '../files/view';
 import template from './template.html';
+import singleTemplate from './single.html';
 
 export default Marionette.View.extend({
-    template: template,
-
     sortAttrs: null,    //Live DOM collection keeping track of the element containing the sort attribute
 
     options: {
@@ -30,15 +29,56 @@ export default Marionette.View.extend({
                 return view.truncStr(view.stripHTML(this.description[0].text));
             },
 
+            //Removes erroneous break tags and adds a rel="external" attribute to anchors
+            fixedDescription: function () {
+                const sanitised = this.description[0].text.replace(/<\/br>/gi, '');
+                return sanitised.replace(/href/g, 'rel="external" href');
+            },
+
             //Shortens the name of the experiment.
             truncName: function () {
                 return view.truncStr(this.name, view.options.nameCharLimit);
             },
 
             //Converts the date from ISO 8601 to the European format dd/mm/yyyy
-            euRelDate: function () {
-                return this.releasedate.split('-').reverse().join(view.options.dateSeparator)
+            euDate: function (propName = 'releasedate') {
+                return this[propName].split('-').reverse().join(view.options.dateSeparator);
+            },
+
+            //Gets number of samples from the result's stats for a single experiment search
+            numSamples: function () {
+                return view.model.collection.stats.get('totalSamples');
+            },
+
+            contactClass: function (email) {
+                if (email) {
+                    return 'email';
+                } else return 'no-link';
+            },
+
+            //Capitalises the contact's role and shows it only if applicable
+            showCapitalised: function (value) {
+                return _.capitalise(this.show(value, ':'));
+            },
+
+            //Only displays the model's value if not null and encloses it with passed in
+            //characters, if at all.
+            show: function (value, right = '', left = '') {
+                if (value) {
+                    return `${left}${value}${right}`;
+                } else {
+                    return '';
+                }
             }
+        }
+    },
+
+    //Uses a different template when displaying a single experiment (akin to an "experiment page").
+    getTemplate: function () {
+        if (this.model.collection.length == 1) {
+            return singleTemplate;
+        } else {
+            return template;
         }
     },
 
@@ -48,6 +88,10 @@ export default Marionette.View.extend({
             this.collection = new Files([], {
                 url: options.filesApiUrl
             });
+
+            //Auto-destroys when a new search is performed
+            this.listenTo(this.model.collection, 'request', this.destroy);
+
         } else {
             throw new Error('Error while initialising experiment view: no file API URL provided.');;
         }          
@@ -90,20 +134,30 @@ export default Marionette.View.extend({
 
         //Lazy-loads file data if visible on scroll or resize. 
         this.collection.url += `/${expAccession}`;
-        this.listenTo(Backbone, 'visibility:check', this.fetchIfAbove.bind(this));
+        this.listenTo(Backbone, 'window:scroll', this.fetchIfVisible);
+        this.listenTo(Backbone, 'window:resize', this.fetchIfVisible);
 
         this.sortAttrs = this.el.getElementsByClassName(this.options.activeClass);  
     },
 
     //Fetches the experiment's file data if its corresponding entry in the result list
     //starts to be visible (top of entry)
-    fetchIfAbove: function () {
-        const isAboveFold = this.el.getBoundingClientRect().top < window.innerHeight;
+    fetchIfVisible: function () {
+        const isSingleExp = this.model.collection.length == 1;
         const files = this.collection;
 
-        if (!files.isBusy && !files.isFetched && isAboveFold) {
-            files.fetch({cache: true, expires: this.options.cacheExpiry});
-            this.stopListening(Backbone);
+        //To minimize re-flow, only compare DOM dimensions if file data hasn't been 
+        //requested yet.
+        if (!files.isBusy && !files.isFetched) {
+            requestAnimationFrame(() => {
+                const dims = this.el.getBoundingClientRect();
+
+                //Only fetch the files for experiments within the viewport
+                if ((dims.bottom >= 0) && (dims.top < this.options.windowHeight)) {
+                    files.fetch();
+                    this.stopListening(Backbone);
+                }
+            });
         }
     },
 

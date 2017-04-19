@@ -64,7 +64,7 @@ export default function (emailDef = '', waitDelay = 3000) {
 
             //The collection is hidden from view until fully loaded from the server. This
             //may have repercussions on the collection's children lifecycle as a view. Hence
-            //this new event. See ../results/view.js.
+            //this new event. See ../experiments/view.js.
             this.collection.trigger('loaded');
         },
 

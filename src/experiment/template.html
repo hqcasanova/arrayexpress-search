@@ -1,13 +1,13 @@
 <article class="experiment">
     <h1 class="experiment-entry">
         <cite class="sortable" data-attribute="accession" title="Click to sort by accession"><%= accession %></cite>:
-        <a rel="external" href="<%= experimentUrl + '/' + accession %>">
+        <a class="internal" href="#<%= accession %>">
             <%= truncName() %>
         </a>
     </h1>   
     <main class="experiment-details">
         <p>
-            <time pubdate datetime="<% releasedate %>" class="sortable active" data-attribute="releasedate" title="Click to sort by release date"><%= euRelDate() %></time> - <%= truncDescription() %>
+            <time pubdate datetime="<% releasedate %>" class="sortable active" data-attribute="releasedate" title="Click to sort by release date"><%= euDate() %></time> - <%= truncDescription() %>
         </p>
         <dl>
             <% if (hasType) { %>

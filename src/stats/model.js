@@ -34,7 +34,7 @@ export default Backbone.Model.extend({
 
     setTotal: function (value, totalName = '') {
         if (totalName) {
-            this.set(`total${this.capitalise(totalName)}`, value);
+            this.set(`total${_.capitalise(totalName)}`, value);
             this.set('total', this.getTotal() + value);
         } else {
             this.set('total', value);
@@ -43,14 +43,10 @@ export default Backbone.Model.extend({
 
     getTotal: function (totalName = '') {
         if (totalName) {
-            return this.get(`total${this.capitalise(totalName)}`);
+            return this.get(`total${_.capitalise(totalName)}`);
         } else {
             return this.get('total');
         }
-    },
-
-    capitalise: function (propName) {
-        return propName.charAt(0).toUpperCase() + propName.slice(1);
     },
 
     purgeLastTotal: function () {

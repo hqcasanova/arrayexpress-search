@@ -20,6 +20,31 @@
         }
     }
 
+    &.single {
+        background: @bg-lightest;
+
+        h1 {
+            border-bottom: 1px solid @border-light;
+        }
+        dt {
+            background: url('https://www.ebi.ac.uk/arrayexpress/assets/images/bg-ltgray.gif');
+            color: @text-lighter;
+        }
+        dd {
+            margin-left: 1rem;
+        }
+        p:first-child {
+            margin-top: 0;
+        }
+
+        .genome-logo {
+            width: auto;
+            height: 1rem;
+            margin-top: -.3rem;
+            vertical-align: middle;
+        }
+    }
+
     .experiment-entry {
         margin-bottom: .1rem;
         font-size: 1.2rem;
@@ -35,10 +60,20 @@
         div {
             white-space: nowrap;
 
+            .single& {
+                white-space: normal;
+            }
+
             @media @medium {
-                float: left;
-                margin-top: 0;
-                width: 50%;
+                &:not(.no-column) {
+                    float: left;
+                    margin-top: 0;
+                    width: 50%;
+                }
+                
+                &.no-column {
+                    clear: left;
+                }
             }
         }
 
@@ -58,6 +93,10 @@
         dd, dt {
             display: inline-block;
             vertical-align: middle;
+
+            .single& {
+                display: block;
+            }
         }
     }
 

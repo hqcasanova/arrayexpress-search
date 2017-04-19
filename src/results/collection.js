@@ -9,6 +9,7 @@ export default Backbone.Collection.extend({
     lastSynced: null,   //Promise from last request
     isFulfilled: null,  //The last GET request was fulfilled
     isFirstFetch: null, //There has been no prior GET request 
+    isCacheHit: null,   //Has the collection been cached?
 
     initialize: function (models, options) {
         const hasRootProp = options.hasOwnProperty('rootProp');
@@ -27,6 +28,10 @@ export default Backbone.Collection.extend({
         this.lastSynced = {};
         this.isFulfilled = true;
         this.isFirstFetch = true;
+
+        //If a request is made to the server, then the data was not found in the cache. Otherwise, it's a cache hit
+        this.listenTo(this, 'request', () => {this.isCacheHit = false});
+        this.listenTo(this, 'cachesync', () => {this.isCacheHit = true});
     },
 
     //Creates a model with the search results' stats before they are parsed out to
@@ -38,7 +43,7 @@ export default Backbone.Collection.extend({
     },
 
     //Aborts any pending request, unmarks stats as new once first successful request
-    //has been made and relays collection events to the stats model 
+    //has been made. 
     fetch: function (options) {
         let fetched;
 
@@ -51,6 +56,13 @@ export default Backbone.Collection.extend({
         fetched = Backbone.Collection.prototype.fetch.call(this, options);
         this.isFulfilled = false;
         
+        this.relayEvents(fetched, options);
+
+        return fetched; 
+    },
+
+    //Relays collection events to the stats model
+    relayEvents: function (fetched, options) {
         this.stats.trigger('request', this.stats, fetched, options);
         fetched.done(() => {
             this.isFulfilled = true;
@@ -59,8 +71,6 @@ export default Backbone.Collection.extend({
             this.stats.trigger('error', this.stats, this.stats.toJSON(), options);
             console.log(`Error while retrieving ${this.rootProp}`); 
         });
-
-        return fetched; 
     },
 
     //Since backbone-fetch-cache plugin modifies the promise before returning from fetch,

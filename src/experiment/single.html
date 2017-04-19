@@ -1,0 +1,85 @@
+<article class="experiment single">
+    <h1 class="experiment-entry"><%= accession %>: <%= name %></h1>   
+    <main class="experiment-details">
+        <dl>
+            <div class="no-column">
+                <dt>Status</dt>
+                <dd>
+                    Last updated on
+                    <time datetime="<% lastupdatedate %>"><%= euDate('lastupdatedate') %></time>, 
+                    released on 
+                    <time pubdate datetime="<% releasedate %>"><%= euDate() %></time>
+                    <% if (hasSubmitDate) { %>,
+                        submitted on 
+                        <time datetime="<% submissiondate %>"><%= euDate('submissiondate') %></time>
+                    <% } %>
+                </dd>
+            </div>
+            <div>
+                <dt>Organism</dt>
+                <dd><%= organism.join(', ') %></dd>
+            </div>
+            <div>
+                <dt>Samples (<%= numSamples() %>)</dt>
+                <dd><a rel="external" href="<%= experimentUrl %>/<%= accession %>/samples">More details and links to data</a></dd>
+            </div>
+            <% if (hasType) { %>
+            <div>
+                <dt>Experiment types</dt>
+                <dd><%= experimenttype.join(', ') %></dd>
+            </div>
+            <% } %>
+            <div>
+                <dt>Protocols (<%= protocol.length %>)</dt>
+                <dd><a rel="external" href="<%= experimentUrl %>/<%= accession %>/protocols">More details</a></dd>
+            </div>
+            <div class="no-column">
+                <dt>Description</dt>
+                <dd><%= fixedDescription() %></dd>
+            </div>
+            <div class="no-column">
+                <dt>Contacts</dt>
+                <dd><ul>
+                    <% provider.forEach(function (contact) { %>
+                        <li>
+                            <%= showCapitalised(contact.role) %>
+                            <a class="<%= contactClass(contact.email) %>" href="mailto:<%= contact.email %>">
+                                <%= contact.contact %>
+                                <%= show(contact.email, '&gt;', '&lt;') %>
+                            </a>
+                        </li>
+                    <% }) %>
+                </ul></dd>
+            </div>
+            <% if (hasBiblio) { %>
+            <div class="no-column">
+                <dt>Citations</dt>
+                <dd><% bibliography.forEach(function (citation) { %>
+                    <p>
+                        <cite><a rel="external" href="http://dx.doi.org/<%= citation.doi %>"><%= citation.title %></a></cite>
+                        <%= citation.authors %>
+                        (<time datetime="citation.year"><%= citation.year %></time>),
+                        <a rel="external" href="http://europepmc.org/abstract/MED/<%= citation.accession %>">Europe PMC <%= citation.accession %></a>.  
+                    </p>   
+                <% }) %></dd>
+            </div>
+            <% } %>
+            <% if (hasSecAcc) { %>
+            <div>
+                <dt>Links</dt>
+                <dd><ul>
+                    <% secondaryaccessionurl.forEach(function (url, index) { %>
+                        <li><a rel="external" href="<%= url %>"><%= secondaryaccession[index] %></a></li>
+                    <% }) %>
+                    <li><a rel="external" href="<%= experimentUrl %>/<%= accession %>/genomespace.html">Send these data to <img class="genome-logo" src="https://www.ebi.ac.uk/arrayexpress/assets/images/gs-logo-title-16.gif" width="120" height="16" title="GenomeSpace" alt="GenomeSpace"></a></li>
+                </ul></dd>
+            </div>
+            <% } %>
+            <div>
+                <dt>MINSEQE</dt>
+                <dd></dd>
+            </div>
+        </dl>
+    </main>
+    <footer class="experiment-files"></footer>
+</article>
