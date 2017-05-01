@@ -4,7 +4,7 @@
     width: 100%;
     text-align: center;
     background-color: @bg-med;
-    transition: height 400ms ease-out;
+    transition: height 350ms ease-out;
 
     &:before {
         content: '';
@@ -44,11 +44,6 @@
 
         @media @small {
             margin-top: 0;
-        }
-
-        &.sticky {
-            position: fixed;
-            left: 0;
         }
 
         .logo {
@@ -196,6 +191,8 @@
     }
 
     .panel {
+        position: fixed;
+        left: 0;
         margin-top: 0;
         width: 100%;
         text-align: left;
@@ -249,5 +246,9 @@
                 }
             }
         }
+    }
+
+    .footer {
+        z-index: -1;
     }
 }

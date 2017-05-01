@@ -93,6 +93,7 @@ export default Marionette.View.extend({
         //keyboard on mobile.
         if (!this.isBlankQuery && (this.isNewQuery || isError)) {
             Backbone.history.navigate(query);
+            document.title = `${this.options.appTitle} | Search results for "${query}"`;
             this.model.set('query', query);
             this.fieldEl.blur();
             results.fetch({
@@ -112,24 +113,7 @@ export default Marionette.View.extend({
 
     toggleHeader: function (isCollapse) {
         this.trigger('header:collapse', isCollapse);
-        this.transCollapse(isCollapse);
         this.el.classList.toggle('collapsed', isCollapse);       
-    },
-
-    //Before making header stick to the top, ensures height transition has ended and
-    //falls back to no transition for browsers not supporting the standard event.
-    transCollapse: function (isCollapse) {
-        const isCollapsedAlready = this.el.classList.contains('collapsed');
-        const that = this;
-
-        if (Marionette.transitionEvnt && !isCollapsedAlready) {
-            this.el.addEventListener(Marionette.transitionEvnt, function self () {
-                that.el.removeEventListener(Marionette.transitionEvnt, self);
-                that.panelEl.classList.toggle('sticky', !isCollapse);        
-            });
-        } else if (!isCollapsedAlready) {
-            that.panelEl.classList.add('sticky', !isCollapse);
-        }
     },
 
     //Alias of the above for revealing the result section

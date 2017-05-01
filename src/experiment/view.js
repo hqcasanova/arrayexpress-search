@@ -8,6 +8,7 @@ import template from './template.html';
 import singleTemplate from './single.html';
 
 export default Marionette.View.extend({
+    monthNames: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
     sortAttrs: null,    //Live DOM collection keeping track of the element containing the sort attribute
 
     options: {
@@ -40,25 +41,117 @@ export default Marionette.View.extend({
                 return view.truncStr(this.name, view.options.nameCharLimit);
             },
 
-            //Converts the date from ISO 8601 to the European format dd/mm/yyyy
-            euDate: function (propName = 'releasedate') {
-                return this[propName].split('-').reverse().join(view.options.dateSeparator);
-            },
-
             //Gets number of samples from the result's stats for a single experiment search
             numSamples: function () {
                 return view.model.collection.stats.get('totalSamples');
             },
 
+            //Marks up contacts distinctively if they have no email
             contactClass: function (email) {
                 if (email) {
                     return 'email';
                 } else return 'no-link';
             },
 
-            //Capitalises the contact's role and shows it only if applicable
-            showCapitalised: function (value) {
-                return _.capitalise(this.show(value, ':'));
+            //Converts the date from ISO 8601 to the European format dd/mm/yyyy
+            euDate: function (attribute = 'releasedate') {
+                return this[attribute].split('-').reverse().join(view.options.dateSeparator);
+            },
+
+            //Converts the date from ISO 8601 to the human-readable format "<date number> <Month name> <year>"
+            humanDate: function (attribute = 'releasedate', obj = this) {
+                const date = new Date(obj[attribute]);
+                return `${date.getDate()} ${view.monthNames[date.getMonth()]} ${date.getFullYear()}`;
+            },
+
+            //Alias of the above for multiple dates. It requires an array of objects with
+            //the "date" property.
+            humanDates: function (dates) {
+                dates.forEach((date) => {
+                    date.date = this.humanDate('date', date);
+                });
+                return dates;
+            },
+
+            //Shows all dates in ascending order, human format and accompanied by their corresponding
+            //descriptive text.
+            datesToString: function () {
+                let converted = this.humanDates(this.sortDates(this.serialDates(
+                    'submissiondate', 'lastupdatedate', 'releasedate'
+                )));
+                converted = converted.map(function (dateObj) {
+                    return `${dateObj.text} ${dateObj.date}`; 
+                });
+                return `${_.capitalise(converted.join(', '))}.`;
+            },
+
+            //Serialises all present dates into an array with both those dates and their associated text
+            serialDates: function (...attributes) {
+                return _.compact(attributes.map((attribute) => {
+                    let text;
+
+                    if (attribute == 'lastupdatedate') {
+                        text = 'last updated';
+                    } else if (attribute == 'submissiondate') {
+                        text = 'submitted';
+                    } else {
+                        text = `${attribute.replace('date', '')}d`;
+                    }
+                    if (this.hasOwnProperty(attribute)) {
+                        return {date: this[attribute], text: text};
+                    } else {
+                        return false;
+                    }
+                }));
+            }, 
+
+            //Sorts dates by ascending order (latest last). It requires an array of objects with
+            //the "date" property.
+            sortDates: function (dates) {
+                return dates.sort(function (a, b) {
+                    if (a.date == b.date) {
+                        return 0;
+                    } else if (a.date < b.date) {
+                        return -1;
+                    } else {
+                        return 1; 
+                    }
+                });
+            },
+
+            //Moves any array item with a certain attribute set to a specific value to the front
+            sortByFirst: function (list, attribute, value) {
+                if (list.length == 1) {
+                    return list;
+                } else { 
+                    return list.sort(function (a, b) {
+                        if (a[attribute].indexOf(value) >= 0 && b[attribute].indexOf(value) >= 0) {
+                            return 0;
+                        } else if (a[attribute].indexOf(value) >= 0) {
+                            return -1;
+                        } else {
+                            return 1;
+                        }
+                    });
+                }
+            },
+
+            //Gets only those array items that have/laks a certain attribute
+            showListFiltered: function (list, attribute, isPresent) {
+                return _.filter(list, function (item) { 
+                    const isNotBlank = (item.hasOwnProperty(attribute) && item[attribute] != null);
+                    return isNotBlank === isPresent;
+                });    
+            },
+
+            //Gets only a certain attribute of each array item
+            showListOf: function (list, attribute) {
+                return this.show(_.pluck(list, attribute).join(', '), '.');
+            },
+
+            //Capitalises the given string and shows it only if applicable
+            showCapitalised: function (string, suffix = '') {
+                return _.capitalise(this.show(string, suffix));
             },
 
             //Only displays the model's value if not null and encloses it with passed in
@@ -76,6 +169,7 @@ export default Marionette.View.extend({
     //Uses a different template when displaying a single experiment (akin to an "experiment page").
     getTemplate: function () {
         if (this.model.collection.length == 1) {
+            document.title = `${this.options.appTitle} | ${this.model.get('accession')}`;
             return singleTemplate;
         } else {
             return template;

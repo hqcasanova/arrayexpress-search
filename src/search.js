@@ -23,9 +23,6 @@ const Search = Marionette.Application.extend({
             secAccUrls: options.secAccUrls
         });
 
-        //Makes the supported transition event name globally available
-        Marionette.transitionEvnt = this.getTransitionEvnt();
-
         //Makes capitalisation convenience method globally available
         _.capitalise = this.capitalise;
 
@@ -52,24 +49,6 @@ const Search = Marionette.Application.extend({
         }
     },
 
-    //Detects the supported transition event name
-    getTransitionEvnt: function () {
-        const el = document.createElement('div');
-        const transitions = {
-            'transition':'transitionend',
-            'MozTransition':'transitionend',
-            'WebkitTransition':'webkitTransitionEnd'
-        };
-
-        for (let evntName in transitions) {
-            if (transitions.hasOwnProperty(evntName) && el.style[evntName] !== undefined) {
-                return transitions[evntName];
-            }
-        }
-
-        return null;
-    },
-
     //Capitalises first letter
     capitalise: function (string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
@@ -78,13 +57,16 @@ const Search = Marionette.Application.extend({
     //Sets up view scaffolding around existing markup
     onStart: function (app, options) {
         const resultsEl = document.querySelector('.experiments');
+        const titleParts = document.title.split('|');
 
         //Sets up search input and prevents scroll when the app cover is on display
         const headerView = new HeaderView({
             el: document.querySelector('.search'),
             model: this.results.stats,
             collection: this.results,
-            cacheExpiry: options.cacheExpiry
+            cacheExpiry: options.cacheExpiry,
+            appTitle: titleParts[0],
+            homeTitle: titleParts[1]
         });
         this.listenTo(headerView, 'header:collapse', this.preventScroll);
 
@@ -115,7 +97,8 @@ const Search = Marionette.Application.extend({
                 nameCharLimit: options.nameCharLimit,
                 dateSeparator: options.dateSeparator,
                 loadingClass: LoadingWithEmail,
-                cacheExpiry: options.cacheExpiry
+                cacheExpiry: options.cacheExpiry,
+                appTitle: titleParts[0]
             },
             emptyViewOptions: {
                 templateContext: {

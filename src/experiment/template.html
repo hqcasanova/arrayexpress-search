@@ -5,9 +5,9 @@
             <%= truncName() %>
         </a>
     </h1>   
-    <main class="experiment-details">
+    <section class="experiment-details">
         <p>
-            <time pubdate datetime="<% releasedate %>" class="sortable active" data-attribute="releasedate" title="Click to sort by release date"><%= euDate() %></time> - <%= truncDescription() %>
+            <time datetime="<%= releasedate %>" class="sortable active" data-attribute="releasedate" title="Click to sort by release date"><%= euDate() %></time> - <%= truncDescription() %>
         </p>
         <dl>
             <% if (hasType) { %>
@@ -21,6 +21,6 @@
                 <dd><%= organism.join(', ') %></dd>
             </div>
         </dl>
-    </main>
+    </section>
     <footer class="experiment-files"></footer>
 </article>

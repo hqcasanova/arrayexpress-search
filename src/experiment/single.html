@@ -1,19 +1,10 @@
 <article class="experiment single">
     <h1 class="experiment-entry"><%= accession %>: <%= name %></h1>   
-    <main class="experiment-details">
+    <section class="experiment-details">
         <dl>
             <div class="no-column">
                 <dt>Status</dt>
-                <dd>
-                    Last updated on
-                    <time datetime="<% lastupdatedate %>"><%= euDate('lastupdatedate') %></time>, 
-                    released on 
-                    <time pubdate datetime="<% releasedate %>"><%= euDate() %></time>
-                    <% if (hasSubmitDate) { %>,
-                        submitted on 
-                        <time datetime="<% submissiondate %>"><%= euDate('submissiondate') %></time>
-                    <% } %>
-                </dd>
+                <dd><%= datesToString() %></dd>
             </div>
             <div>
                 <dt>Organism</dt>
@@ -26,7 +17,7 @@
             <% if (hasType) { %>
             <div>
                 <dt>Experiment types</dt>
-                <dd><%= experimenttype.join(', ') %></dd>
+                <dd><%= showCapitalised(experimenttype.join(', ')) %></dd>
             </div>
             <% } %>
             <div>
@@ -40,15 +31,16 @@
             <div class="no-column">
                 <dt>Contacts</dt>
                 <dd><ul>
-                    <% provider.forEach(function (contact) { %>
+                    <% sortByFirst(showListFiltered(provider, 'email', true), 'role', 'submitter').forEach(function (contact) { %>
                         <li>
-                            <%= showCapitalised(contact.role) %>
+                            <%= showCapitalised(contact.role, ':').replace(/;/gi, '/') %>
                             <a class="<%= contactClass(contact.email) %>" href="mailto:<%= contact.email %>">
                                 <%= contact.contact %>
                                 <%= show(contact.email, '&gt;', '&lt;') %>
                             </a>
                         </li>
                     <% }) %>
+                    <%= show(showListOf(showListFiltered(provider, 'email', false), 'contact'), '</li>', '<li>') %>
                 </ul></dd>
             </div>
             <% if (hasBiblio) { %>
@@ -58,7 +50,7 @@
                     <p>
                         <cite><a rel="external" href="http://dx.doi.org/<%= citation.doi %>"><%= citation.title %></a></cite>
                         <%= citation.authors %>
-                        (<time datetime="citation.year"><%= citation.year %></time>),
+                        <time datetime="<%= citation.year %>"><%= show(citation.year, '),', '(') %></time>
                         <a rel="external" href="http://europepmc.org/abstract/MED/<%= citation.accession %>">Europe PMC <%= citation.accession %></a>.  
                     </p>   
                 <% }) %></dd>
@@ -80,6 +72,6 @@
                 <dd></dd>
             </div>
         </dl>
-    </main>
+    </section>
     <footer class="experiment-files"></footer>
 </article>
