@@ -17807,6 +17807,7 @@ exports.default = _backbone4.default.View.extend({
         //keyboard on mobile.
         if (!this.isBlankQuery && (this.isNewQuery || isError)) {
             _backbone2.default.history.navigate(query);
+            document.title = this.options.appTitle + ' | Search results for "' + query + '"';
             this.model.set('query', query);
             this.fieldEl.blur();
             results.fetch({
@@ -17828,24 +17829,7 @@ exports.default = _backbone4.default.View.extend({
 
     toggleHeader: function toggleHeader(isCollapse) {
         this.trigger('header:collapse', isCollapse);
-        this.transCollapse(isCollapse);
         this.el.classList.toggle('collapsed', isCollapse);
-    },
-
-    //Before making header stick to the top, ensures height transition has ended and
-    //falls back to no transition for browsers not supporting the standard event.
-    transCollapse: function transCollapse(isCollapse) {
-        var isCollapsedAlready = this.el.classList.contains('collapsed');
-        var that = this;
-
-        if (_backbone4.default.transitionEvnt && !isCollapsedAlready) {
-            this.el.addEventListener(_backbone4.default.transitionEvnt, function self() {
-                that.el.removeEventListener(_backbone4.default.transitionEvnt, self);
-                that.panelEl.classList.toggle('sticky', !isCollapse);
-            });
-        } else if (!isCollapsedAlready) {
-            that.panelEl.classList.add('sticky', !isCollapse);
-        }
     },
 
     //Alias of the above for revealing the result section
@@ -18509,6 +18493,7 @@ var _single2 = _interopRequireDefault(_single);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = _backbone4.default.View.extend({
+    monthNames: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
     sortAttrs: null, //Live DOM collection keeping track of the element containing the sort attribute
 
     options: {
@@ -18541,27 +18526,130 @@ exports.default = _backbone4.default.View.extend({
                 return view.truncStr(this.name, view.options.nameCharLimit);
             },
 
-            //Converts the date from ISO 8601 to the European format dd/mm/yyyy
-            euDate: function euDate() {
-                var propName = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'releasedate';
-
-                return this[propName].split('-').reverse().join(view.options.dateSeparator);
-            },
-
             //Gets number of samples from the result's stats for a single experiment search
             numSamples: function numSamples() {
                 return view.model.collection.stats.get('totalSamples');
             },
 
+            //Marks up contacts distinctively if they have no email
             contactClass: function contactClass(email) {
                 if (email) {
                     return 'email';
                 } else return 'no-link';
             },
 
-            //Capitalises the contact's role and shows it only if applicable
-            showCapitalised: function showCapitalised(value) {
-                return _underscore2.default.capitalise(this.show(value, ':'));
+            //Converts the date from ISO 8601 to the European format dd/mm/yyyy
+            euDate: function euDate() {
+                var attribute = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'releasedate';
+
+                return this[attribute].split('-').reverse().join(view.options.dateSeparator);
+            },
+
+            //Converts the date from ISO 8601 to the human-readable format "<date number> <Month name> <year>"
+            humanDate: function humanDate() {
+                var attribute = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'releasedate';
+                var obj = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this;
+
+                var date = new Date(obj[attribute]);
+                return date.getDate() + ' ' + view.monthNames[date.getMonth()] + ' ' + date.getFullYear();
+            },
+
+            //Alias of the above for multiple dates. It requires an array of objects with
+            //the "date" property.
+            humanDates: function humanDates(dates) {
+                var _this = this;
+
+                dates.forEach(function (date) {
+                    date.date = _this.humanDate('date', date);
+                });
+                return dates;
+            },
+
+            //Shows all dates in ascending order, human format and accompanied by their corresponding
+            //descriptive text.
+            datesToString: function datesToString() {
+                var converted = this.humanDates(this.sortDates(this.serialDates('submissiondate', 'lastupdatedate', 'releasedate')));
+                converted = converted.map(function (dateObj) {
+                    return dateObj.text + ' ' + dateObj.date;
+                });
+                return _underscore2.default.capitalise(converted.join(', ')) + '.';
+            },
+
+            //Serialises all present dates into an array with both those dates and their associated text
+            serialDates: function serialDates() {
+                var _this2 = this;
+
+                for (var _len = arguments.length, attributes = Array(_len), _key = 0; _key < _len; _key++) {
+                    attributes[_key] = arguments[_key];
+                }
+
+                return _underscore2.default.compact(attributes.map(function (attribute) {
+                    var text = void 0;
+
+                    if (attribute == 'lastupdatedate') {
+                        text = 'last updated';
+                    } else if (attribute == 'submissiondate') {
+                        text = 'submitted';
+                    } else {
+                        text = attribute.replace('date', '') + 'd';
+                    }
+                    if (_this2.hasOwnProperty(attribute)) {
+                        return { date: _this2[attribute], text: text };
+                    } else {
+                        return false;
+                    }
+                }));
+            },
+
+            //Sorts dates by ascending order (latest last). It requires an array of objects with
+            //the "date" property.
+            sortDates: function sortDates(dates) {
+                return dates.sort(function (a, b) {
+                    if (a.date == b.date) {
+                        return 0;
+                    } else if (a.date < b.date) {
+                        return -1;
+                    } else {
+                        return 1;
+                    }
+                });
+            },
+
+            //Moves any array item with a certain attribute set to a specific value to the front
+            sortByFirst: function sortByFirst(list, attribute, value) {
+                if (list.length == 1) {
+                    return list;
+                } else {
+                    return list.sort(function (a, b) {
+                        if (a[attribute].indexOf(value) >= 0 && b[attribute].indexOf(value) >= 0) {
+                            return 0;
+                        } else if (a[attribute].indexOf(value) >= 0) {
+                            return -1;
+                        } else {
+                            return 1;
+                        }
+                    });
+                }
+            },
+
+            //Gets only those array items that have/laks a certain attribute
+            showListFiltered: function showListFiltered(list, attribute, isPresent) {
+                return _underscore2.default.filter(list, function (item) {
+                    var isNotBlank = item.hasOwnProperty(attribute) && item[attribute] != null;
+                    return isNotBlank === isPresent;
+                });
+            },
+
+            //Gets only a certain attribute of each array item
+            showListOf: function showListOf(list, attribute) {
+                return this.show(_underscore2.default.pluck(list, attribute).join(', '), '.');
+            },
+
+            //Capitalises the given string and shows it only if applicable
+            showCapitalised: function showCapitalised(string) {
+                var suffix = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+
+                return _underscore2.default.capitalise(this.show(string, suffix));
             },
 
             //Only displays the model's value if not null and encloses it with passed in
@@ -18582,6 +18670,7 @@ exports.default = _backbone4.default.View.extend({
     //Uses a different template when displaying a single experiment (akin to an "experiment page").
     getTemplate: function getTemplate() {
         if (this.model.collection.length == 1) {
+            document.title = this.options.appTitle + ' | ' + this.model.get('accession');
             return _single2.default;
         } else {
             return _template2.default;
@@ -18650,7 +18739,7 @@ exports.default = _backbone4.default.View.extend({
     //Fetches the experiment's file data if its corresponding entry in the result list
     //starts to be visible (top of entry)
     fetchIfVisible: function fetchIfVisible() {
-        var _this = this;
+        var _this3 = this;
 
         var isSingleExp = this.model.collection.length == 1;
         var files = this.collection;
@@ -18659,12 +18748,12 @@ exports.default = _backbone4.default.View.extend({
         //requested yet.
         if (!files.isBusy && !files.isFetched) {
             requestAnimationFrame(function () {
-                var dims = _this.el.getBoundingClientRect();
+                var dims = _this3.el.getBoundingClientRect();
 
                 //Only fetch the files for experiments within the viewport
-                if (dims.bottom >= 0 && dims.top < _this.options.windowHeight) {
+                if (dims.bottom >= 0 && dims.top < _this3.options.windowHeight) {
                     files.fetch();
-                    _this.stopListening(_backbone2.default);
+                    _this3.stopListening(_backbone2.default);
                 }
             });
         }
@@ -19914,23 +20003,9 @@ __p+='<article class="experiment single">\n    <h1 class="experiment-entry">'+
 ((__t=( accession ))==null?'':__t)+
 ': '+
 ((__t=( name ))==null?'':__t)+
-'</h1>   \n    <main class="experiment-details">\n        <dl>\n            <div class="no-column">\n                <dt>Status</dt>\n                <dd>\n                    Last updated on\n                    <time datetime="';
- lastupdatedate 
-__p+='">'+
-((__t=( euDate('lastupdatedate') ))==null?'':__t)+
-'</time>, \n                    released on \n                    <time pubdate datetime="';
- releasedate 
-__p+='">'+
-((__t=( euDate() ))==null?'':__t)+
-'</time>\n                    ';
- if (hasSubmitDate) { 
-__p+=',\n                        submitted on \n                        <time datetime="';
- submissiondate 
-__p+='">'+
-((__t=( euDate('submissiondate') ))==null?'':__t)+
-'</time>\n                    ';
- } 
-__p+='\n                </dd>\n            </div>\n            <div>\n                <dt>Organism</dt>\n                <dd>'+
+'</h1>   \n    <section class="experiment-details">\n        <dl>\n            <div class="no-column">\n                <dt>Status</dt>\n                <dd>'+
+((__t=( datesToString() ))==null?'':__t)+
+'</dd>\n            </div>\n            <div>\n                <dt>Organism</dt>\n                <dd>'+
 ((__t=( organism.join(', ') ))==null?'':__t)+
 '</dd>\n            </div>\n            <div>\n                <dt>Samples ('+
 ((__t=( numSamples() ))==null?'':__t)+
@@ -19941,7 +20016,7 @@ __p+='\n                </dd>\n            </div>\n            <div>\n          
 '/samples">More details and links to data</a></dd>\n            </div>\n            ';
  if (hasType) { 
 __p+='\n            <div>\n                <dt>Experiment types</dt>\n                <dd>'+
-((__t=( experimenttype.join(', ') ))==null?'':__t)+
+((__t=( showCapitalised(experimenttype.join(', ')) ))==null?'':__t)+
 '</dd>\n            </div>\n            ';
  } 
 __p+='\n            <div>\n                <dt>Protocols ('+
@@ -19953,9 +20028,9 @@ __p+='\n            <div>\n                <dt>Protocols ('+
 '/protocols">More details</a></dd>\n            </div>\n            <div class="no-column">\n                <dt>Description</dt>\n                <dd>'+
 ((__t=( fixedDescription() ))==null?'':__t)+
 '</dd>\n            </div>\n            <div class="no-column">\n                <dt>Contacts</dt>\n                <dd><ul>\n                    ';
- provider.forEach(function (contact) { 
+ sortByFirst(showListFiltered(provider, 'email', true), 'role', 'submitter').forEach(function (contact) { 
 __p+='\n                        <li>\n                            '+
-((__t=( showCapitalised(contact.role) ))==null?'':__t)+
+((__t=( showCapitalised(contact.role, ':').replace(/;/gi, '/') ))==null?'':__t)+
 '\n                            <a class="'+
 ((__t=( contactClass(contact.email) ))==null?'':__t)+
 '" href="mailto:'+
@@ -19966,7 +20041,9 @@ __p+='\n                        <li>\n                            '+
 ((__t=( show(contact.email, '&gt;', '&lt;') ))==null?'':__t)+
 '\n                            </a>\n                        </li>\n                    ';
  }) 
-__p+='\n                </ul></dd>\n            </div>\n            ';
+__p+='\n                    '+
+((__t=( show(showListOf(showListFiltered(provider, 'email', false), 'contact'), '</li>', '<li>') ))==null?'':__t)+
+'\n                </ul></dd>\n            </div>\n            ';
  if (hasBiblio) { 
 __p+='\n            <div class="no-column">\n                <dt>Citations</dt>\n                <dd>';
  bibliography.forEach(function (citation) { 
@@ -19976,9 +20053,11 @@ __p+='\n                    <p>\n                        <cite><a rel="external"
 ((__t=( citation.title ))==null?'':__t)+
 '</a></cite>\n                        '+
 ((__t=( citation.authors ))==null?'':__t)+
-'\n                        (<time datetime="citation.year">'+
+'\n                        <time datetime="'+
 ((__t=( citation.year ))==null?'':__t)+
-'</time>),\n                        <a rel="external" href="http://europepmc.org/abstract/MED/'+
+'">'+
+((__t=( show(citation.year, '),', '(') ))==null?'':__t)+
+'</time>\n                        <a rel="external" href="http://europepmc.org/abstract/MED/'+
 ((__t=( citation.accession ))==null?'':__t)+
 '">Europe PMC '+
 ((__t=( citation.accession ))==null?'':__t)+
@@ -20002,7 +20081,7 @@ __p+='\n                    <li><a rel="external" href="'+
 ((__t=( accession ))==null?'':__t)+
 '/genomespace.html">Send these data to <img class="genome-logo" src="https://www.ebi.ac.uk/arrayexpress/assets/images/gs-logo-title-16.gif" width="120" height="16" title="GenomeSpace" alt="GenomeSpace"></a></li>\n                </ul></dd>\n            </div>\n            ';
  } 
-__p+='\n            <div>\n                <dt>MINSEQE</dt>\n                <dd></dd>\n            </div>\n        </dl>\n    </main>\n    <footer class="experiment-files"></footer>\n</article>';
+__p+='\n            <div>\n                <dt>MINSEQE</dt>\n                <dd></dd>\n            </div>\n        </dl>\n    </section>\n    <footer class="experiment-files"></footer>\n</article>';
 }
 return __p;
 };
@@ -20021,9 +20100,9 @@ __p+='<article class="experiment">\n    <h1 class="experiment-entry">\n        <
 ((__t=( accession ))==null?'':__t)+
 '">\n            '+
 ((__t=( truncName() ))==null?'':__t)+
-'\n        </a>\n    </h1>   \n    <main class="experiment-details">\n        <p>\n            <time pubdate datetime="';
- releasedate 
-__p+='" class="sortable active" data-attribute="releasedate" title="Click to sort by release date">'+
+'\n        </a>\n    </h1>   \n    <section class="experiment-details">\n        <p>\n            <time datetime="'+
+((__t=( releasedate ))==null?'':__t)+
+'" class="sortable active" data-attribute="releasedate" title="Click to sort by release date">'+
 ((__t=( euDate() ))==null?'':__t)+
 '</time> - '+
 ((__t=( truncDescription() ))==null?'':__t)+
@@ -20035,7 +20114,7 @@ __p+='\n            <div>\n                <dt class="sortable" data-attribute="
  } 
 __p+='\n            <div>\n                <dt class="sortable" data-attribute="organism" title="Click to sort by organism">Organism:</dt>\n                <dd>'+
 ((__t=( organism.join(', ') ))==null?'':__t)+
-'</dd>\n            </div>\n        </dl>\n    </main>\n    <footer class="experiment-files"></footer>\n</article>';
+'</dd>\n            </div>\n        </dl>\n    </section>\n    <footer class="experiment-files"></footer>\n</article>';
 }
 return __p;
 };
@@ -20203,9 +20282,6 @@ var Search = _backbone4.default.Application.extend({
             secAccUrls: options.secAccUrls
         });
 
-        //Makes the supported transition event name globally available
-        _backbone4.default.transitionEvnt = this.getTransitionEvnt();
-
         //Makes capitalisation convenience method globally available
         _underscore2.default.capitalise = this.capitalise;
 
@@ -20228,24 +20304,6 @@ var Search = _backbone4.default.Application.extend({
         }
     },
 
-    //Detects the supported transition event name
-    getTransitionEvnt: function getTransitionEvnt() {
-        var el = document.createElement('div');
-        var transitions = {
-            'transition': 'transitionend',
-            'MozTransition': 'transitionend',
-            'WebkitTransition': 'webkitTransitionEnd'
-        };
-
-        for (var evntName in transitions) {
-            if (transitions.hasOwnProperty(evntName) && el.style[evntName] !== undefined) {
-                return transitions[evntName];
-            }
-        }
-
-        return null;
-    },
-
     //Capitalises first letter
     capitalise: function capitalise(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
@@ -20254,13 +20312,16 @@ var Search = _backbone4.default.Application.extend({
     //Sets up view scaffolding around existing markup
     onStart: function onStart(app, options) {
         var resultsEl = document.querySelector('.experiments');
+        var titleParts = document.title.split('|');
 
         //Sets up search input and prevents scroll when the app cover is on display
         var headerView = new _view2.default({
             el: document.querySelector('.search'),
             model: this.results.stats,
             collection: this.results,
-            cacheExpiry: options.cacheExpiry
+            cacheExpiry: options.cacheExpiry,
+            appTitle: titleParts[0],
+            homeTitle: titleParts[1]
         });
         this.listenTo(headerView, 'header:collapse', this.preventScroll);
 
@@ -20288,7 +20349,8 @@ var Search = _backbone4.default.Application.extend({
                 nameCharLimit: options.nameCharLimit,
                 dateSeparator: options.dateSeparator,
                 loadingClass: LoadingWithEmail,
-                cacheExpiry: options.cacheExpiry
+                cacheExpiry: options.cacheExpiry,
+                appTitle: titleParts[0]
             },
             emptyViewOptions: {
                 templateContext: {
