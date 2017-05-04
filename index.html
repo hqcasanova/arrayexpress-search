@@ -18,7 +18,7 @@
 <body>
 
     <!-- COVER -->
-    <header class="search">
+    <header role="banner" class="search">
         <a rel="external" href="http://www.ebi.ac.uk/" class="corporate">
             <img src="https://www.ebi.ac.uk/web_guidelines/EBI-Framework/v1.1/images/logos/EMBL-EBI/EMBL_EBI_Logo_white.svg" alt="EMBL-EBI" class="corporate-logo">
         </a>
@@ -30,7 +30,7 @@
                 </h1>
                 <h2 class="subtitle">Functional genomics data</h2>
             </aside>
-            <fieldset class="action loading">
+            <fieldset role="search" class="action loading">
                 <input type="search" value="" class="field" id="search-field" placeholder="E.g. &quot;Geuvadis&quot;" autocorrect="off" autocapitalize="none" autocomplete="off" spellcheck="false"><!--
              --><a rel="search" href="javascript:void(0)" class="button" id="search-button">
                     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewbox="0 -3 24 24" shape-rendering="geometricPrecision" class="icn-magnify">
@@ -43,14 +43,14 @@
             </fieldset>
         </div>
         <a rel="external" href="https://github.com/hqcasanova/arrayexpress-search" class="forkme"><img src="https://s3.amazonaws.com/github/ribbons/forkme_left_gray_6d6d6d.png" alt="" width="149" height="149"></a>
-        <ul class="footer">
+        <ul role="contentinfo" class="footer">
             <li><img alt="MIT" src="assets/mit.png" width="120" height="64"><a rel="external" class="mit footer-link" title="The MIT License" href="http://opensource.org/licenses/MIT">Released under <em>MIT License</em></a></li><!--
          --><li><a rel="external" class="hq footer-link" title="HQCasanova.com" href="http://www.hqcasanova.com">Created by <em>HQCasanova</em></a><img alt="HQCasanova" src="assets/hqcasanova.png" width="64" height="64"></li>
         </ul>
     </header>
 
     <!-- BELOW THE FOLD -->
-    <main class="experiments"></main>
+    <main role="main" class="experiments"></main>
     
     <!-- Search application -->
     <script src="bundle.js"></script>
