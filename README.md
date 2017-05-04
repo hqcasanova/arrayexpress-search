@@ -17,10 +17,10 @@ Responsive single-page search app for EMBL's ArrayExpress archive of functional 
 - Feature: implement filtering by data fields. Use fullscreen modal accessible through additional button on right-hand side corner of the header. 
 - Feature: make the filtering modal's contents dynamic depending on window's width, rendering select boxes directly inside the header if they fit in. 
 - UX: when search result set is sizeable, there is a rendering delay between the single experiment details view and the result list. Use feedback different from the spinner to convey system as opposed to data exchange progress. Eg: bar along header's bottom border.
-- UX: go back to to button.
+- UX: back to top button.
 - UX: find a way to show the "Genome Space" button outside the details view, in the result card for each experiment.
 - UX: show the suggestions view when no query present or blank.
-- Improve support for mobile stock browsers. Android's one is not respecting the top margin for the contents main section, leading to the loss of the titles. Chrome on Android is fine.
+- Improve support for mobile stock browsers. Android's one is not respecting the top margin for the contents main section, leading to the overlapping of the first experiment's section and the header. Chrome on Android is fine.
 - Add JSDoc documentation.
 - Add unit tests.
 - Whatever else I can't imagine right now.
