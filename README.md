@@ -23,4 +23,3 @@ Responsive single-page search app for EMBL's ArrayExpress archive of functional 
 - Improve support for mobile stock browsers. Android's one is not respecting the top margin for the contents main section, leading to the overlapping of the first experiment's section and the header. Chrome on Android is fine.
 - Add JSDoc documentation.
 - Add unit tests.
-- Whatever else I can't imagine right now.
